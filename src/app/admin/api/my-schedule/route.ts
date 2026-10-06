@@ -12,9 +12,7 @@ export const GET = adminRoute(
       name: session.name,
       isStaff: session.role === "staff",
       today: taipeiToday(),
-      items: items.map(({ playerName, eventName, date, time, itemCategory, eventItem, bibNumber }) => ({
-        playerName, eventName, date, time, itemCategory, eventItem, bibNumber,
-      })),
+      items,
     });
   },
   { allowStaff: true },

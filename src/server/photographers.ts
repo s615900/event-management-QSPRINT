@@ -42,6 +42,8 @@ export interface PhotographerPick {
   itemCategory: string;
   eventItem: string;
   bibNumber: string;
+  school: string;
+  group: string;
 }
 
 export class StaffError extends Error {
@@ -102,6 +104,8 @@ async function loadPicks(): Promise<Array<PhotographerPick & { photographer: str
       itemCategory: r["項目分類"] || "",
       eventItem: r["比賽項目"] || "",
       bibNumber: r["賽事號碼布"] || "",
+      school: r["學校"] || "",
+      group: normalize(r["組別"]),
     });
   });
   return picks;
@@ -162,8 +166,8 @@ export async function listPicksForStaff(id: number): Promise<PhotographerPick[]>
   return (await loadPicks())
     .filter((k) => k.photographer === me.name)
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
-    .map(({ playerName, eventName, date, time, itemCategory, eventItem, bibNumber }) => ({
-      playerName, eventName, date, time, itemCategory, eventItem, bibNumber,
+    .map(({ playerName, eventName, date, time, itemCategory, eventItem, bibNumber, school, group }) => ({
+      playerName, eventName, date, time, itemCategory, eventItem, bibNumber, school, group,
     }));
 }
 
