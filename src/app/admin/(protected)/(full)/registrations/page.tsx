@@ -34,7 +34,6 @@ interface LookupResponse {
 }
 
 const GROUP_OPTIONS = ["國中男生", "國中女生", "高中男生", "高中女生", "公開男生", "公開女生"];
-const ITEM_CATEGORY_OPTIONS = ["田賽", "徑賽", "混合賽"];
 const PAGE_SIZE = 20;
 
 type FormFields = {
@@ -82,6 +81,8 @@ export default function RegistrationsPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [events, setEvents] = useState<string[]>([]);
   const [schools, setSchools] = useState<string[]>([]);
+  // 項目分類選項來自 Ragic「比賽項目表」，要和報名表的單選選項一致
+  const [itemCategories, setItemCategories] = useState<string[]>([]);
 
   const [form, setForm] = useState<FormFields | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -120,6 +121,10 @@ export default function RegistrationsPage() {
   useEffect(() => {
     api.get<LookupResponse>("/lookups/events").then((r) => setEvents(r.items)).catch(() => {});
     api.get<LookupResponse>("/lookups/schools").then((r) => setSchools(r.items)).catch(() => {});
+    fetch("/api/event-items")
+      .then((r) => r.json())
+      .then((groups: Array<{ category: string }>) => setItemCategories(groups.map((g) => g.category)))
+      .catch(() => {});
   }, []);
 
   const flash = (text: string) => {
@@ -370,7 +375,10 @@ export default function RegistrationsPage() {
               <label>項目分類</label>
               <select value={form.itemCategory} onChange={(e) => setForm({ ...form, itemCategory: e.target.value })}>
                 <option value="">請選擇項目分類</option>
-                {ITEM_CATEGORY_OPTIONS.map((c) => (<option key={c} value={c}>{c}</option>))}
+                {form.itemCategory && !itemCategories.includes(form.itemCategory) && (
+                  <option value={form.itemCategory}>{form.itemCategory}（舊分類）</option>
+                )}
+                {itemCategories.map((c) => (<option key={c} value={c}>{c}</option>))}
               </select>
             </div>
             <div className="form-field">

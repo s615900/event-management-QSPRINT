@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { requireLineIdentity } from "@/server/line";
 import { eachRecord, ragicGet, SHEET } from "@/server/ragic";
 import { serverError } from "@/server/http";
-import { photographerNameByPickKey, pickKey } from "@/server/photographers";
 
 // 查詢個人報名記錄：需驗證身分且只能查自己的
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/registrations/[lineUserId]">) {
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/registration
     }
     const uid = auth.lineUserId;
     const data = await ragicGet(SHEET.REGISTRATION, `&where=1001199,eq,${encodeURIComponent(uid)}`);
-    const photographerOf = await photographerNameByPickKey();
     const records: Array<Record<string, string>> = [];
     eachRecord(data, (r, id) => {
       if ((r["LINE user ID"] || "") !== uid) return;
@@ -29,10 +27,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/registration
         bibNumber: r["賽事號碼布"] || "",
         group: r["組別"] || "",
         school: r["學校"] || "",
-        photographer:
-          photographerOf.get(
-            pickKey({ lineUserId: uid, eventName: r["賽事名稱"], date: r["日期"], time: r["時間"], bibNumber: r["賽事號碼布"] }),
-          ) || "",
+        photographer: r["攝影師"] || "",
       });
     });
     records.sort((a, b) => (b.date || "").localeCompare(a.date || ""));

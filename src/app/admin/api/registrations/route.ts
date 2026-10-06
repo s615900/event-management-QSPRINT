@@ -1,7 +1,6 @@
 import { adminRoute, pageParams } from "@/server/admin/route";
 import { writeAuditLog } from "@/server/admin/audit";
-import { fetchAll, registrationPickKey, toRegistrationListItem, type Row } from "@/server/admin/data";
-import { photographerNameByPickKey, pickKey } from "@/server/photographers";
+import { fetchAll, toRegistrationListItem, type Row } from "@/server/admin/data";
 import { normalize, ragicPost, REGISTRATION_FIELD, SHEET, type RagicRecord } from "@/server/ragic";
 import { readBody } from "@/server/http";
 
@@ -46,12 +45,8 @@ export const GET = adminRoute("查詢賽事報名表失敗", async (req) => {
     return true;
   });
   const page = sortRows(filtered, sortKey, sortOrder).slice(offset, offset + limit);
-  const photographerOf = await photographerNameByPickKey();
   return Response.json({
-    items: page.map(({ id, rec }) => ({
-      ...toRegistrationListItem(rec, id),
-      photographer: photographerOf.get(pickKey(registrationPickKey(rec))) || "",
-    })),
+    items: page.map(({ id, rec }) => ({ ...toRegistrationListItem(rec, id), photographer: rec["攝影師"] || "" })),
     total: filtered.length,
     hasMore: offset + page.length < filtered.length,
   });

@@ -102,17 +102,6 @@ export function toMemberListItem(r: RagicRecord, id: string, itemTags: Map<strin
   };
 }
 
-// 報名記錄對應到攝影師選擇紀錄用的 key 欄位
-export function registrationPickKey(r: RagicRecord) {
-  return {
-    lineUserId: r["LINE user ID"] || "",
-    eventName: r["賽事名稱"] || "",
-    date: r["日期"] || "",
-    time: r["時間"] || "",
-    bibNumber: r["賽事號碼布"] || "",
-  };
-}
-
 export function toRegistrationListItem(r: RagicRecord, id: string) {
   return {
     id,

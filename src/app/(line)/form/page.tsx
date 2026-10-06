@@ -12,14 +12,8 @@ type PhotographerOption = { id: number; name: string };
 // 攝影師選單的「不指定」選項
 const NO_PREFERENCE = "none";
 
-const ITEMS: Record<string, string[]> = {
-  田賽: ["跳高", "撐竿跳高", "跳遠", "三級跳遠", "鉛球", "鐵餅", "標槍", "鏈球"],
-  徑賽: [
-    "100公尺", "200公尺", "400公尺", "800公尺", "1500公尺", "3000公尺", "5000公尺", "10000公尺",
-    "110公尺跨欄", "100公尺跨欄", "400公尺跨欄", "3000公尺障礙", "4x100公尺接力", "4x400公尺接力",
-  ],
-  混合賽: ["十項全能", "七項全能"],
-};
+// 項目分類 → 比賽項目，來自 Ragic「比賽項目表」（/api/event-items）
+type ItemGroup = { category: string; items: string[] };
 
 type Fields = { eventName: string; bibNumber: string; eventDate: string; eventTime: string; itemCategory: string; eventItem: string };
 const ERR: Record<keyof Fields, string> = {
@@ -36,6 +30,7 @@ export default function FormPage() {
   const [member, setMember] = useState<MemberInfo | null>(null);
   const [events, setEvents] = useState<EventOption[] | null>(null);
   const [eventsError, setEventsError] = useState(false);
+  const [itemGroups, setItemGroups] = useState<ItemGroup[]>([]);
   const [photographers, setPhotographers] = useState<PhotographerOption[]>([]);
   const [photographerId, setPhotographerId] = useState("");
   const [photographerError, setPhotographerError] = useState("");
@@ -76,10 +71,12 @@ export default function FormPage() {
       }
 
       // 載入賽事（只顯示開放報名的）與可挑選的攝影師
-      const [eventsRes, photographersRes] = await Promise.allSettled([
+      const [eventsRes, photographersRes, itemsRes] = await Promise.allSettled([
         fetch("/api/events").then((r) => r.json()),
         fetch("/api/photographers").then((r) => r.json()),
+        fetch("/api/event-items").then((r) => r.json()),
       ]);
+      if (itemsRes.status === "fulfilled" && Array.isArray(itemsRes.value)) setItemGroups(itemsRes.value);
       if (eventsRes.status === "fulfilled") setEvents(Array.isArray(eventsRes.value) ? eventsRes.value : []);
       else setEventsError(true);
       // 攝影師名單讀不到時就不顯示這個欄位，不擋住報名
@@ -267,15 +264,17 @@ export default function FormPage() {
                   value={f.itemCategory}
                   onChange={(e) => setF((prev) => ({ ...prev, itemCategory: e.target.value, eventItem: "" }))}
                 >
-                  <option value="">請選擇項目分類</option>
-                  {Object.keys(ITEMS).map((c) => <option key={c} value={c}>{c}</option>)}
+                  <option value="">{itemGroups.length ? "請選擇項目分類" : "載入項目中..."}</option>
+                  {itemGroups.map((g) => <option key={g.category} value={g.category}>{g.category}</option>)}
                 </select>
               </Field>
 
               <Field label="比賽項目" required error={errors.eventItem}>
                 <select className={inputCls} value={f.eventItem} onChange={set("eventItem")}>
                   <option value="">{f.itemCategory ? "請選擇比賽項目" : "請先選擇項目分類"}</option>
-                  {(ITEMS[f.itemCategory] ?? []).map((it) => <option key={it} value={it}>{it}</option>)}
+                  {(itemGroups.find((g) => g.category === f.itemCategory)?.items ?? []).map((it) => (
+                    <option key={it} value={it}>{it}</option>
+                  ))}
                 </select>
               </Field>
 

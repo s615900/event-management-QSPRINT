@@ -144,6 +144,8 @@ export const SHEET = {
   EVENT_LOOKUP: "new-test-parameters/3", // 賽事資訊總表（賽事主檔）
   SCHOOL_LOOKUP: "new-test-parameters/2", // 國高中職學校清單——後台下拉選單來源
   AUDIT_LOG: "new-test-parameters/5", // 操作紀錄表
+  PHOTOGRAPHER: "new-test-parameters/7", // 攝影師名單
+  EVENT_ITEMS: "new-test-parameters/1", // 比賽項目表：報名頁「項目分類／比賽項目」選單來源
 } as const;
 
 // 選手資料表（new-beta/2）
@@ -188,6 +190,18 @@ export const REGISTRATION_FIELD = {
   email: "1001212",
   bibNumber: "1001216",
   picture: "1001222",
+  photographer: "1001462" as string, // 選手挑的攝影師（存名稱，文字欄位）
+} as const;
+
+// 攝影師名單（new-test-parameters/7）——欄位 ID 取自 Ragic 表單結構
+export const PHOTOGRAPHER_FIELD = {
+  name: "1001454",
+  role: "1001455", // 單選：攝影師／小編
+  phone: "1001456",
+  email: "1001457",
+  status: "1001458", // 單選：在職／離職
+  adminAccess: "1001459", // 勾選：Yes／No
+  notes: "1001460",
 } as const;
 
 // 賽事相簿連結（new-beta/7）

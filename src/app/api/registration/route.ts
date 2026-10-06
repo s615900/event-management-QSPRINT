@@ -9,7 +9,7 @@ import {
 } from "@/server/qsprint";
 import { ragicPost, REGISTRATION_FIELD, SHEET } from "@/server/ragic";
 import { parseEventDateRange } from "@/server/dates";
-import { findPickable, recordPick } from "@/server/photographers";
+import { findPickable } from "@/server/photographers";
 import { readBody, serverError } from "@/server/http";
 
 // 送出賽事報名（寫入用數字欄位代碼）；lineUserId 一律採用 LIFF 驗證出的真實身分
@@ -72,14 +72,8 @@ export async function POST(req: Request) {
       [REGISTRATION_FIELD.itemCategory]: itemCategory,
       [REGISTRATION_FIELD.eventItem]: eventItem,
       [REGISTRATION_FIELD.bibNumber]: bibNumber,
+      ...(photographer && REGISTRATION_FIELD.photographer ? { [REGISTRATION_FIELD.photographer]: photographer.name } : {}),
     });
-
-    if (photographer) {
-      await recordPick({
-        photographerId: photographer.id,
-        lineUserId, playerName, eventName, date, time, itemCategory, eventItem, bibNumber,
-      });
-    }
 
     // 回應送出後才執行：上傳 LINE 大頭照到報名表、推播報名成功通知（皆不影響報名結果）
     after(async () => {

@@ -1,8 +1,7 @@
 import type { NextRequest } from "next/server";
 import { adminRoute } from "@/server/admin/route";
 import { diffFields, writeAuditLog } from "@/server/admin/audit";
-import { registrationPickKey, toRegistrationListItem } from "@/server/admin/data";
-import { rekeyPick, removePick } from "@/server/photographers";
+import { toRegistrationListItem } from "@/server/admin/data";
 import { normalize, ragicDelete, ragicGetOne, ragicPost, REGISTRATION_FIELD, SHEET } from "@/server/ragic";
 import { readBody } from "@/server/http";
 
@@ -42,21 +41,9 @@ export const PATCH = adminRoute("編輯報名資料失敗", async (req: NextRequ
   const { id } = await ctx.params;
   const before = await ragicGetOne(SHEET.REGISTRATION, id);
   if (!before) return NOT_FOUND();
-  const body = await readBody(req);
-  const { writeBody, changes } = diffFields(before, body, EDITABLE_FIELDS, normalize);
+  const { writeBody, changes } = diffFields(before, await readBody(req), EDITABLE_FIELDS, normalize);
   if (changes.length === 0) return Response.json({ success: true, changed: false });
   await ragicPost(`${SHEET.REGISTRATION}/${id}`, writeBody, { strict: true });
-  // 攝影師選擇紀錄是用賽事/日期/時間/號碼布對應的，報名改了這些欄位要跟著改
-  const pick = (k: string, ragicKey: string) => (k in body ? String(body[k] ?? "") : before[ragicKey] || "");
-  await rekeyPick(registrationPickKey(before), {
-    eventName: pick("eventName", "賽事名稱"),
-    date: pick("date", "日期"),
-    time: pick("time", "時間"),
-    bibNumber: pick("bibNumber", "賽事號碼布"),
-    playerName: pick("playerName", "選手姓名"),
-    itemCategory: pick("itemCategory", "項目分類"),
-    eventItem: pick("eventItem", "比賽項目"),
-  });
   await writeAuditLog(session, "編輯", `賽事報名表 - ${before["選手姓名"] || id}`, changes.join("；"));
   return Response.json({ success: true, changed: true });
 });
@@ -66,7 +53,6 @@ export const DELETE = adminRoute("刪除報名資料失敗", async (_req: NextRe
   const rec = await ragicGetOne(SHEET.REGISTRATION, id);
   if (!rec) return NOT_FOUND();
   await ragicDelete(`${SHEET.REGISTRATION}/${id}`);
-  await removePick(registrationPickKey(rec));
   await writeAuditLog(session, "刪除", `賽事報名表 - ${rec["選手姓名"] || id}`, "刪除報名資料");
   return Response.json({ success: true });
 });
