@@ -83,6 +83,13 @@ public/admin/            後台 PWA：manifest、service worker、圖示
 - 不再需要 CORS 白名單與靜態檔白名單（Next.js 不會公開原始碼）。
 - LIFF ID 可用 `NEXT_PUBLIC_LIFF_ID` 覆寫，未設定時沿用 `2010405599-yknWwXWq`。
 
+## 部署到 Replit
+
+`.replit` 已設定好：按 Run 是開發模式（port 5000），Deploy 會 `npm ci && npm run build` 後 `next start`。
+金鑰放在 Replit 的 Secrets（與 `.env.example` 同名）。**不要**在 Replit 設 `AUTH_TEST_MODE`、`NEXT_PUBLIC_LINE_TEST_MODE`。
+
+⚠️ Replit 部署環境的檔案在重新部署／重啟後不會保留，`data/photographers.json`（攝影師名單與選手的選擇）會消失，正式使用前要改存 Ragic。
+
 ## 上線（例如 Vercel）後要改的外部設定
 
 1. **LINE Developers → LIFF → Endpoint URL**：改成新網域（例：`https://新網域/`）。
