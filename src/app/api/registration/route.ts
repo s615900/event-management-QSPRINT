@@ -38,6 +38,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // 選手號碼只能是 4 位數字（前端已限制，後端再擋一次）
+    if (!/^\d{4}$/.test(String(bibNumber ?? "").trim())) {
+      return Response.json({ success: false, error: "選手號碼請輸入 4 位數字" }, { status: 400 });
+    }
+
     // 後端再次驗證日期是否落在賽事區間（前端只是體驗，防止繞過）
     const range = parseEventDateRange(eventName || "");
     if (range && date && (date < range.start || date > range.end)) {

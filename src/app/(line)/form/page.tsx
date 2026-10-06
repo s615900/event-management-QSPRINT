@@ -109,6 +109,8 @@ export default function FormPage() {
     (Object.keys(ERR) as (keyof Fields)[]).forEach((k) => {
       if (!f[k].trim()) errs[k] = ERR[k];
     });
+    // 選手號碼只能是 4 位數字
+    if (f.bibNumber.trim() && !/^\d{4}$/.test(f.bibNumber.trim())) errs.bibNumber = "選手號碼請輸入 4 位數字";
     // 日期需落在所選賽事的區間內
     if (ev && f.eventDate && hasRange && (f.eventDate < ev.startDate || f.eventDate > ev.endDate)) {
       errs.eventDate = `日期需在 ${ev.startDate} ～ ${ev.endDate} 之間`;
@@ -241,7 +243,22 @@ export default function FormPage() {
               {f.eventName && (
                 <div className="mt-1 border-t border-[#f0f0f0] pt-4">
                   <Field label="選手號碼" required error={errors.bibNumber}>
-                    <input className={inputCls} value={f.bibNumber} onChange={set("bibNumber")} placeholder="請輸入您的選手號碼" inputMode="numeric" />
+                    <input
+                      className={inputCls}
+                      value={f.bibNumber}
+                      // 只留數字、最多 4 位（貼上全形數字也會轉成半形）
+                      onChange={(e) => {
+                        const digits = e.target.value
+                          .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+                          .replace(/\D/g, "")
+                          .slice(0, 4);
+                        setF((prev) => ({ ...prev, bibNumber: digits }));
+                      }}
+                      placeholder="請輸入 4 位數字號碼"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={4}
+                    />
                     <div className="mt-[5px] text-xs text-[#888]">📋 請依號碼簿填入您的號碼</div>
                   </Field>
                 </div>
