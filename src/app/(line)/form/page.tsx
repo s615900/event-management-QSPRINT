@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { V1Header } from "@/components/v1-ui";
 import { AccountDisabled, btnPrimary, btnSoft, Card, Container, Field, inputCls, Loading } from "@/components/line-ui";
-import { authHeaders, getLineIdToken } from "@/lib/liff";
+import { authHeaders, fetchMember, getLineIdToken } from "@/lib/liff";
 import { cache, readCachedMember, saveMember, type MemberInfo } from "@/lib/member-cache";
 
 type EventOption = { id: string; name: string; startDate: string; endDate: string };
@@ -26,7 +26,8 @@ const ERR: Record<keyof Fields, string> = {
 };
 
 export default function FormPage() {
-  const [stage, setStage] = useState<"loading" | "ready" | "disabled">("loading");
+  const [stage, setStage] = useState<"loading" | "ready" | "disabled" | "error">("loading");
+  const [errorMessage, setErrorMessage] = useState("");
   const [member, setMember] = useState<MemberInfo | null>(null);
   const [events, setEvents] = useState<EventOption[] | null>(null);
   const [eventsError, setEventsError] = useState(false);
@@ -50,13 +51,12 @@ export default function FormPage() {
         const token = await getLineIdToken();
         setIdToken(token);
         try {
-          const mres = await fetch(`/api/member/${encodeURIComponent(lineUserId)}`, { headers: authHeaders(token) });
-          const mdata = await mres.json();
-          if (mdata.found && mdata.member.accountStatus === "停用") {
+          const mdata = await fetchMember(lineUserId, token);
+          if (mdata.found && mdata.member?.accountStatus === "停用") {
             setStage("disabled");
             return;
           }
-          if (mdata.found) {
+          if (mdata.found && mdata.member) {
             saveMember(mdata.member);
             setMember(mdata.member);
           } else {
@@ -65,8 +65,11 @@ export default function FormPage() {
             window.location.href = "/register";
             return;
           }
-        } catch {
-          /* 查詢失敗時保持快取顯示，不中斷頁面 */
+        } catch (err) {
+          // 查不到選手資料（例如 LINE 憑證被拒）就不讓報名，避免送出時才失敗
+          setErrorMessage((err as Error).message);
+          setStage("error");
+          return;
         }
       }
 
@@ -131,16 +134,15 @@ export default function FormPage() {
       setIdToken(token);
     }
     try {
-      const checkRes = await fetch(`/api/member/${encodeURIComponent(lineUserId)}`, { headers: authHeaders(token) });
-      const checkData = await checkRes.json();
+      const checkData = await fetchMember(lineUserId, token);
       if (!checkData.found) {
         alert("尚未完成選手登錄，請重新登錄後再報名。");
         localStorage.removeItem("isMember");
         window.location.href = "/register";
         return;
       }
-    } catch {
-      alert("網路錯誤，請再試一次");
+    } catch (err) {
+      alert((err as Error).message || "網路錯誤，請再試一次");
       setSubmitText(null);
       return;
     }
@@ -198,6 +200,12 @@ export default function FormPage() {
       <Container>
         {stage === "loading" && <Loading text="載入賽事資料中..." />}
         {stage === "disabled" && <AccountDisabled />}
+        {stage === "error" && (
+          <div className="p-10 text-center text-[#666]">
+            <p>⚠️ {errorMessage}</p>
+            <button className={`${btnPrimary} mt-4`} onClick={() => location.reload()}>重新整理</button>
+          </div>
+        )}
         {stage === "ready" && (
           <div>
             <Card>

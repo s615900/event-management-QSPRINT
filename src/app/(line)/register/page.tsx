@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { V1Header } from "@/components/v1-ui";
 import { btnPrimary, Card, Container, Field, inputCls, Loading } from "@/components/line-ui";
-import { authHeaders, getLiff, isPreviewMode } from "@/lib/liff";
+import { authHeaders, fetchMember, getLiff, isPreviewMode } from "@/lib/liff";
 import { cache, saveMember } from "@/lib/member-cache";
 
 const GROUPS: { label: string; options: { value: string; disabled?: boolean }[] }[] = [
@@ -26,6 +26,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState<Form>({ playerName: "", group: "", school: "", phone: "", email: "", ig: "@" });
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [failMessage, setFailMessage] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -72,15 +73,19 @@ export default function RegisterPage() {
 
       // 會員資料已鎖定：已是會員且帳號啟用 → 回到首頁選單。帳號停用（曾解除綁定）→ 留在本頁重新登錄
       try {
-        const mres = await fetch(`/api/member/${encodeURIComponent(uid)}`, { headers: authHeaders(token) });
-        const mdata = await mres.json();
-        if (mdata.found && mdata.member.accountStatus !== "停用") {
+        const mdata = await fetchMember(uid, token);
+        if (mdata.found && mdata.member && mdata.member.accountStatus !== "停用") {
           saveMember(mdata.member);
           window.location.href = "/"; // 已是會員：回到首頁選單
           return;
         }
-      } catch {
-        /* 查詢失敗則照常顯示登錄表單 */
+      } catch (err) {
+        // 查不到是否已登錄時不能顯示表單，否則已登錄的選手會重複建檔（預覽模式沒有 LINE 憑證，照常顯示）
+        if (!isPreviewMode()) {
+          setFailMessage((err as Error).message);
+          setStage("failed");
+          return;
+        }
       }
 
       try {
@@ -158,7 +163,7 @@ export default function RegisterPage() {
         {stage === "loading" && <Loading text="載入中..." />}
         {stage === "failed" && (
           <div className="p-10 text-center text-[#666]">
-            LINE 登入失敗，請從 LINE 重新開啟此連結，或
+            {failMessage || "LINE 登入失敗，請從 LINE 重新開啟此連結"}，或
             <a href="#" className="text-brand underline" onClick={(e) => { e.preventDefault(); location.reload(); }}>點此重試</a>。
           </div>
         )}

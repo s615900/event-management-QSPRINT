@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/line-ui";
 import { V1Container, V1Header } from "@/components/v1-ui";
-import { authHeaders, getLiff, isPreviewMode } from "@/lib/liff";
+import { fetchMember, getLiff, isPreviewMode } from "@/lib/liff";
 import { clearAll } from "@/lib/member-cache";
 import { cache, saveMember } from "@/lib/member-cache";
 
@@ -91,9 +91,9 @@ export default function IndexPage() {
         if (profile.pictureUrl) cache.set("linePicture", profile.pictureUrl);
 
         setStatus("查詢會員資料...");
-        const res = await fetch(`/api/member/${encodeURIComponent(profile.userId)}`, { headers: authHeaders(idToken) });
-        const data = await res.json();
-        if (data.found && data.member.accountStatus !== "停用") {
+        // 查詢失敗（例如 LINE 憑證被拒）會丟錯誤，由下面 catch 顯示，不能當成「沒註冊過」
+        const data = await fetchMember(profile.userId, idToken);
+        if (data.found && data.member && data.member.accountStatus !== "停用") {
           saveMember(data.member);
           setMenu({ isMember: true, name: data.member.playerName || profile.displayName });
         } else {

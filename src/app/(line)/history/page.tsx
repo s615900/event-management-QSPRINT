@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { V1Header } from "@/components/v1-ui";
 import { AccountDisabled, btnGray, btnPrimary, Container, Spinner } from "@/components/line-ui";
-import { authHeaders, getLineIdToken } from "@/lib/liff";
+import { authHeaders, fetchMember, getLineIdToken } from "@/lib/liff";
 import { cache, saveMember } from "@/lib/member-cache";
 
 type RecordItem = {
@@ -21,7 +21,8 @@ type RecordItem = {
 
 export default function HistoryPage() {
   const [name, setName] = useState("—");
-  const [stage, setStage] = useState<"loading" | "list" | "empty" | "disabled">("loading");
+  const [stage, setStage] = useState<"loading" | "list" | "empty" | "disabled" | "error">("loading");
+  const [errorMessage, setErrorMessage] = useState("");
   const [records, setRecords] = useState<RecordItem[]>([]);
 
   useEffect(() => {
@@ -32,22 +33,24 @@ export default function HistoryPage() {
         setStage("empty");
         return;
       }
-      const headers = authHeaders(await getLineIdToken());
+      const token = await getLineIdToken();
+      const headers = authHeaders(token);
 
       // 即時向 Ragic 取最新選手資料，更新頁首與側邊抽屜
       try {
-        const mres = await fetch(`/api/member/${encodeURIComponent(lineUserId)}`, { headers });
-        const mdata = await mres.json();
-        if (mdata.found && mdata.member.accountStatus === "停用") {
+        const mdata = await fetchMember(lineUserId, token);
+        if (mdata.found && mdata.member?.accountStatus === "停用") {
           setStage("disabled");
           return;
         }
-        if (mdata.found) {
+        if (mdata.found && mdata.member) {
           saveMember(mdata.member);
           setName(mdata.member.playerName || "—");
         }
-      } catch {
-        /* 查詢失敗時保持快取 */
+      } catch (err) {
+        setErrorMessage((err as Error).message);
+        setStage("error");
+        return;
       }
 
       try {
@@ -84,6 +87,7 @@ export default function HistoryPage() {
           </div>
         )}
         {stage === "disabled" && <AccountDisabled />}
+        {stage === "error" && <p className="px-5 py-10 text-center text-[#666]">⚠️ {errorMessage}</p>}
         {stage === "empty" && (
           <div className="px-5 py-[60px] text-center">
             <div className="mb-3 text-5xl">🏁</div>
