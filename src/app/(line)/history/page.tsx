@@ -104,7 +104,7 @@ export default function HistoryPage() {
                 ["組別", r.group || "—"],
                 ["日期時間", `${r.date || "—"} ${r.time || ""}`],
                 ["學校", r.school || "—"],
-                ["攝影師", r.photographer || "不指定"],
+                ["攝影師", r.photographer || "—"],
               ].map(([label, value]) => (
                 <div key={label} className="mb-1 flex items-center text-sm">
                   <span className="w-[70px] shrink-0 text-[#999]">{label}</span>

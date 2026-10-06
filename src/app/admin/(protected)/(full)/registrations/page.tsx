@@ -314,7 +314,7 @@ export default function RegistrationsPage() {
                   <td data-label="學校 / 組別">{[item.school, item.group].filter(Boolean).join(" / ") || "—"}</td>
                   <td data-label="項目">{[item.itemCategory, item.eventItem].filter(Boolean).join(" ") || "—"}</td>
                   <td data-label="號碼布">{item.bibNumber || "—"}</td>
-                  <td data-label="攝影師">{item.photographer || "不指定"}</td>
+                  <td data-label="攝影師">{item.photographer || "—"}</td>
                   <td data-label="操作">
                     <div className="cell-actions">
                       <button type="button" className="link-btn" onClick={() => openEdit(item.id)}>編輯</button>
@@ -402,7 +402,7 @@ export default function RegistrationsPage() {
             <div className="form-field">
               <label>攝影師</label>
               <select value={form.photographer} onChange={(e) => setForm({ ...form, photographer: e.target.value })}>
-                <option value="">不指定</option>
+                <option value="">（未選）</option>
                 {form.photographer && !photographers.includes(form.photographer) && (
                   <option value={form.photographer}>{form.photographer}（已停用或不在名單）</option>
                 )}

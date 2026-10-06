@@ -9,7 +9,7 @@ import {
 } from "@/server/qsprint";
 import { ragicPost, REGISTRATION_FIELD, SHEET } from "@/server/ragic";
 import { parseEventDateRange } from "@/server/dates";
-import { findPickable } from "@/server/photographers";
+import { findPickable, listPickablePhotographers } from "@/server/photographers";
 import { readBody, serverError } from "@/server/http";
 
 // 送出賽事報名（寫入用數字欄位代碼）；lineUserId 一律採用 LIFF 驗證出的真實身分
@@ -23,11 +23,14 @@ export async function POST(req: Request) {
     } = await readBody(req);
     const lineUserId = auth.lineUserId;
 
-    // 選手挑的攝影師（空白代表不指定）；只接受目前在職、職務為攝影師的人。
+    // 選手挑的攝影師；只接受目前在職、職務為攝影師的人。名單上有人可選時一定要選一位。
     // 注意：Ragic 記錄編號可能是 0，不能用「有沒有值」判斷是否有選
     const pickedRaw = String(photographerId ?? "").trim();
     const pickedId = pickedRaw === "" ? null : Number(pickedRaw);
     const photographer = pickedId !== null && Number.isInteger(pickedId) ? await findPickable(pickedId) : null;
+    if (pickedRaw === "" && REGISTRATION_FIELD.photographer && (await listPickablePhotographers()).length > 0) {
+      return Response.json({ success: false, error: "請選擇攝影師" }, { status: 400 });
+    }
     if (pickedRaw !== "" && !photographer) {
       return Response.json(
         { success: false, error: "您選的攝影師目前無法選擇，請重新整理後再選一次" },

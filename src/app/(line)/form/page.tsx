@@ -9,8 +9,6 @@ import { cache, readCachedMember, saveMember, type MemberInfo } from "@/lib/memb
 type EventOption = { id: string; name: string; startDate: string; endDate: string };
 type PhotographerOption = { id: number; name: string };
 
-// 攝影師選單的「不指定」選項
-const NO_PREFERENCE = "none";
 
 // 項目分類 → 比賽項目，來自 Ragic「比賽項目表」（/api/event-items）
 type ItemGroup = { category: string; items: string[] };
@@ -116,7 +114,7 @@ export default function FormPage() {
       errs.eventDate = `日期需在 ${ev.startDate} ～ ${ev.endDate} 之間`;
     }
     setErrors(errs);
-    // 有攝影師可挑時必須選一個（可以選「不指定」）
+    // 有攝影師可挑時必須選一位
     const needPhotographer = photographers.length > 0 && !photographerId;
     setPhotographerError(needPhotographer ? "請選擇攝影師" : "");
     return Object.keys(errs).length === 0 && !needPhotographer;
@@ -164,9 +162,9 @@ export default function FormPage() {
       itemCategory: f.itemCategory,
       eventItem: f.eventItem,
       pictureUrl: cache.get("linePicture"),
-      photographerId: photographerId === NO_PREFERENCE ? "" : photographerId,
+      photographerId,
     };
-    const photographerName = photographers.find((p) => String(p.id) === photographerId)?.name ?? "不指定";
+    const photographerName = photographers.find((p) => String(p.id) === photographerId)?.name ?? "";
     sessionStorage.setItem("lastEvent", f.eventName);
     sessionStorage.setItem("lastBib", bibNumber);
     sessionStorage.setItem("lastItem", f.eventItem);
@@ -291,7 +289,6 @@ export default function FormPage() {
                   <select className={inputCls} value={photographerId} onChange={(e) => setPhotographerId(e.target.value)}>
                     <option value="">請選擇攝影師</option>
                     {photographers.map((p) => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
-                    <option value={NO_PREFERENCE}>不指定（由工作人員安排）</option>
                   </select>
                 </Field>
               )}
