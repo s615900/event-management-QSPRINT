@@ -81,7 +81,7 @@ public/admin/            後台 PWA：manifest、service worker、圖示
 - 報名成功推播、大頭照上傳、webhook 處理改用 Next.js `after()`：回應送出後才執行，部署到 Vercel 也不會被中斷。
 - 移除原本的暫時除錯 log（IG 欄位 Unicode、LIFF_CHANNEL_ID 長度等）；IG 欄位的三種讀法保留。
 - 不再需要 CORS 白名單與靜態檔白名單（Next.js 不會公開原始碼）。
-- LIFF ID 可用 `NEXT_PUBLIC_LIFF_ID` 覆寫，未設定時沿用 `2010405599-yknWwXWq`。
+- LIFF ID 可用 `NEXT_PUBLIC_LIFF_ID` 覆寫，未設定時使用 `2010405599-2w4tn9a2`（LIFF App「賽事報名 3」）。
 
 ## 部署到 Vercel（目前使用）
 

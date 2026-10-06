@@ -3,7 +3,7 @@
 import type { Liff } from "@line/liff";
 
 // LIFF ID 可用環境變數覆寫，預設沿用原專案
-export const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "2010405599-yknWwXWq";
+export const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID || "2010405599-2w4tn9a2";
 
 // 本機略過 LINE：.env.local 設 NEXT_PUBLIC_LINE_TEST_MODE=1，且網址是 localhost 才會生效。
 // 後端也要開 AUTH_TEST_MODE=1 才會接受測試憑證，正式環境兩邊都不會啟用。
