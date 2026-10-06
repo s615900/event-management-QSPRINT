@@ -23,6 +23,7 @@ interface RegistrationDetail extends RegistrationListItem {
   lineUserId: string;
   registrationNumber: string;
   registeredAt: string;
+  photographer: string;
 }
 interface RegistrationListResponse {
   items: RegistrationListItem[];
@@ -48,6 +49,7 @@ type FormFields = {
   bibNumber: string;
   ig: string;
   email: string;
+  photographer: string;
 };
 
 const emptyForm: FormFields = {
@@ -62,6 +64,7 @@ const emptyForm: FormFields = {
   bibNumber: "",
   ig: "",
   email: "",
+  photographer: "",
 };
 
 export default function RegistrationsPage() {
@@ -83,6 +86,8 @@ export default function RegistrationsPage() {
   const [schools, setSchools] = useState<string[]>([]);
   // 項目分類選項來自 Ragic「比賽項目表」，要和報名表的單選選項一致
   const [itemCategories, setItemCategories] = useState<string[]>([]);
+  // 攝影師選單：在職、職務為攝影師的人
+  const [photographers, setPhotographers] = useState<string[]>([]);
 
   const [form, setForm] = useState<FormFields | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -121,6 +126,10 @@ export default function RegistrationsPage() {
   useEffect(() => {
     api.get<LookupResponse>("/lookups/events").then((r) => setEvents(r.items)).catch(() => {});
     api.get<LookupResponse>("/lookups/schools").then((r) => setSchools(r.items)).catch(() => {});
+    api
+      .get<{ items: Array<{ name: string; role: string; active: boolean }> }>("/staff")
+      .then((r) => setPhotographers(r.items.filter((p) => p.active && p.role === "攝影師").map((p) => p.name)))
+      .catch(() => {});
     fetch("/api/event-items")
       .then((r) => r.json())
       .then((groups: Array<{ category: string }>) => setItemCategories(groups.map((g) => g.category)))
@@ -154,6 +163,7 @@ export default function RegistrationsPage() {
         bibNumber: d.bibNumber,
         ig: d.ig,
         email: d.email,
+        photographer: d.photographer,
       });
     } catch (err) {
       setError((err as Error).message);
@@ -388,6 +398,16 @@ export default function RegistrationsPage() {
             <div className="form-field">
               <label>賽事號碼布</label>
               <input type="text" value={form.bibNumber} onChange={(e) => setForm({ ...form, bibNumber: e.target.value })} />
+            </div>
+            <div className="form-field">
+              <label>攝影師</label>
+              <select value={form.photographer} onChange={(e) => setForm({ ...form, photographer: e.target.value })}>
+                <option value="">不指定</option>
+                {form.photographer && !photographers.includes(form.photographer) && (
+                  <option value={form.photographer}>{form.photographer}（已停用或不在名單）</option>
+                )}
+                {photographers.map((p) => (<option key={p} value={p}>{p}</option>))}
+              </select>
             </div>
             <div className="form-field">
               <label>IG 聯絡資訊</label>

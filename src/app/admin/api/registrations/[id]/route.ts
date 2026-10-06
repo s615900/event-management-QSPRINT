@@ -20,6 +20,7 @@ export const GET = adminRoute("查詢報名詳情失敗", async (_req: NextReque
     lineUserId: r["LINE user ID"] || "",
     registrationNumber: r["報名編號"] || "",
     registeredAt: r["報名時間"] || "",
+    photographer: r["攝影師"] || "",
   });
 });
 
@@ -35,6 +36,7 @@ const EDITABLE_FIELDS = [
   { key: "bibNumber", fieldId: REGISTRATION_FIELD.bibNumber, label: "賽事號碼布", ragicKey: "賽事號碼布" },
   { key: "itemCategory", fieldId: REGISTRATION_FIELD.itemCategory, label: "項目分類", ragicKey: "項目分類" },
   { key: "eventItem", fieldId: REGISTRATION_FIELD.eventItem, label: "比賽項目", ragicKey: "比賽項目" },
+  { key: "photographer", fieldId: REGISTRATION_FIELD.photographer, label: "攝影師", ragicKey: "攝影師" },
 ];
 
 export const PATCH = adminRoute("編輯報名資料失敗", async (req: NextRequest, session, ctx: Ctx) => {

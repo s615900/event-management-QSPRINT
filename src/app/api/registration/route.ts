@@ -23,10 +23,12 @@ export async function POST(req: Request) {
     } = await readBody(req);
     const lineUserId = auth.lineUserId;
 
-    // 選手挑的攝影師（空白代表不指定）；只接受目前在職、職務為攝影師的人
-    const pickedId = Number(photographerId) || 0;
-    const photographer = pickedId ? await findPickable(pickedId) : null;
-    if (pickedId && !photographer) {
+    // 選手挑的攝影師（空白代表不指定）；只接受目前在職、職務為攝影師的人。
+    // 注意：Ragic 記錄編號可能是 0，不能用「有沒有值」判斷是否有選
+    const pickedRaw = String(photographerId ?? "").trim();
+    const pickedId = pickedRaw === "" ? null : Number(pickedRaw);
+    const photographer = pickedId !== null && Number.isInteger(pickedId) ? await findPickable(pickedId) : null;
+    if (pickedRaw !== "" && !photographer) {
       return Response.json(
         { success: false, error: "您選的攝影師目前無法選擇，請重新整理後再選一次" },
         { status: 400 },

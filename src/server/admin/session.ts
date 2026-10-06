@@ -55,7 +55,8 @@ export function verifySessionToken(token: string | undefined): AdminSession | nu
     const payload = JSON.parse(Buffer.from(data, "base64url").toString("utf8")) as SessionPayload;
     if (typeof payload.exp !== "number" || payload.exp < Date.now() || !payload.email) return null;
     const role: AdminRole = payload.role === "staff" ? "staff" : "admin";
-    return { email: payload.email, name: payload.name, role, staffId: role === "staff" ? payload.staffId : undefined };
+    const staffId = role === "staff" && typeof payload.staffId === "number" ? payload.staffId : undefined;
+    return { email: payload.email, name: payload.name, role, staffId };
   } catch {
     return null;
   }
@@ -75,7 +76,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   const session = verifySessionToken(store.get(ADMIN_SESSION_COOKIE)?.value);
   if (session?.role === "staff") {
     // 攝影師帳號每次都重新確認：被停用或拿掉後台權限就立刻失效（不用等 cookie 過期）
-    const staff = session.staffId ? await findStaffAdminById(session.staffId) : null;
+    const staff = session.staffId !== undefined ? await findStaffAdminById(session.staffId) : null;
     if (!staff || staff.email !== session.email.trim().toLowerCase()) return null;
     return { ...session, name: staff.name };
   }

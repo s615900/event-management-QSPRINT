@@ -64,6 +64,7 @@ const CREATE_FIELDS = [
   { key: "bibNumber", fieldId: REGISTRATION_FIELD.bibNumber, label: "賽事號碼布", required: false },
   { key: "itemCategory", fieldId: REGISTRATION_FIELD.itemCategory, label: "項目分類", required: false },
   { key: "eventItem", fieldId: REGISTRATION_FIELD.eventItem, label: "比賽項目", required: false },
+  { key: "photographer", fieldId: REGISTRATION_FIELD.photographer, label: "攝影師", required: false },
 ];
 
 export const POST = adminRoute("新增報名資料失敗", async (req, session) => {

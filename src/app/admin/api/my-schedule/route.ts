@@ -6,7 +6,8 @@ import { taipeiToday } from "@/server/dates";
 export const GET = adminRoute(
   "讀取拍攝行程失敗",
   async (_req, session) => {
-    const items = session.role === "staff" && session.staffId ? await listPicksForStaff(session.staffId) : [];
+    const items =
+      session.role === "staff" && session.staffId !== undefined ? await listPicksForStaff(session.staffId) : [];
     return Response.json({
       name: session.name,
       isStaff: session.role === "staff",

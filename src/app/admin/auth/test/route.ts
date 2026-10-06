@@ -13,9 +13,11 @@ import { findStaffAdminById } from "@/server/photographers";
 // /admin/auth/test → 管理員；/admin/auth/test?staff=<id> → 以該攝影師的身分（需在職且有後台權限）
 export async function GET(req: NextRequest) {
   if (!isAuthTestMode()) return new Response("Not Found", { status: 404 });
-  const staffId = Number(req.nextUrl.searchParams.get("staff")) || 0;
+  // Ragic 記錄編號可能是 0，所以用「有沒有帶參數」判斷
+  const staffParam = req.nextUrl.searchParams.get("staff");
+  const staffId = staffParam === null || staffParam === "" ? null : Number(staffParam);
   let token: string;
-  if (staffId) {
+  if (staffId !== null && Number.isInteger(staffId)) {
     const staff = await findStaffAdminById(staffId);
     if (!staff) return new Response("這位攝影師沒有後台權限或已停用", { status: 400 });
     token = createSessionToken(staff.email, staff.name, "staff", staff.id);
