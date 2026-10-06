@@ -1,0 +1,53 @@
+/* 後台公開頁面（登入 / 無權限）樣式，配合後台深藍主題；class 加上 auth- 前綴避免和後台頁面的 .card 衝突 */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: #0e3a5c;
+  color: #12202c;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+.auth-page * { box-sizing: border-box; }
+.auth-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 36px 30px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+.auth-card h1 { font-size: 18px; font-weight: 800; margin: 14px 0 8px; color: #12202c; }
+.auth-card p { font-size: 13.5px; color: #5c7181; line-height: 1.6; margin: 0 0 20px; }
+.auth-logo { width: 64px; height: 64px; border-radius: 14px; }
+.auth-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #d6e2ea;
+  background: #ffffff;
+  color: #12202c;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.auth-google-btn:hover { background: #f5f8fa; }
+.auth-error-banner {
+  background: #fdecea;
+  color: #b3261e;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+html, body { margin: 0; padding: 0; }

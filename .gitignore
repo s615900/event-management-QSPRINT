@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+!.env.example
+
+# 本機資料檔（攝影師名單與選手的選擇）
+/data

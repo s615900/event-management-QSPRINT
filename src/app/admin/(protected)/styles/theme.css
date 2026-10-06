@@ -1,0 +1,34 @@
+/* 共用色彩變數（深藍色版設計稿） */
+:root {
+  /* 側邊欄 */
+  --color-sidebar-bg: #0e3a5c;
+  --color-sidebar-text: #dcebf7;
+  --color-accent: #4fa8de;
+  --color-accent-light: #7fc3f0;
+
+  /* 主要內容區 */
+  --color-bg-main: #f5f8fa;
+  --color-card-bg: #ffffff;
+  --color-card-border: #e3ecf2;
+  --color-text-primary: #12202c;
+  --color-text-secondary: #5c7181;
+  --color-primary-btn: #0e3a5c;
+
+  /* 狀態標籤 */
+  --color-success-bg: #dcf4e8;
+  --color-success-text: #1f8a55;
+  --color-pending-bg: #fdf0d5;
+  --color-pending-text: #b5790a;
+  --color-info-bg: #dcebf7;
+  --color-info-text: #0e3a5c;
+  --color-neutral-bg: #eef1f3;
+  --color-neutral-text: #6b6b6b;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; min-height: 100vh; }
+body {
+  font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: var(--color-bg-main);
+  color: var(--color-text-primary);
+}

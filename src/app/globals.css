@@ -1,26 +1,15 @@
-@import "tailwindcss";
+/*
+ * Tailwind 主題與 utilities 全站共用；preflight（樣式重置）只套在前台（見 (line)/line.css），
+ * 後台沿用原本 admin-web 的 CSS 檔，不受 Tailwind 重置影響、維持原本外觀。
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme {
+  --color-brand: #4fa8de;
+  --color-brand-dark: #0e3a5c;
+  --color-brand-soft: #dcebf7;
+  --color-brand-line: #7fc3f0;
+  --color-danger: #e53e3e;
 }
