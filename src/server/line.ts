@@ -140,6 +140,24 @@ export async function sendRegistrationNotification(lineUserId: string, info: Reg
   }
 }
 
+const LINE_MULTICAST_URL = "https://api.line.me/v2/bot/message/multicast";
+
+// 同一則訊息推給多位選手（相簿開放通知）。回傳實際送出的人數；測試／預覽帳號會略過
+export async function multicastText(lineUserIds: string[], text: string): Promise<number> {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!token) throw new Error("缺少 LINE_CHANNEL_ACCESS_TOKEN，無法發送 LINE 通知");
+  const ids = [...new Set(lineUserIds)].filter((id) => id && !id.startsWith("preview_") && !id.startsWith("test-"));
+  for (let i = 0; i < ids.length; i += 500) {
+    const res = await fetch(LINE_MULTICAST_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ to: ids.slice(i, i + 500), messages: [{ type: "text", text }] }),
+    });
+    if (!res.ok) throw new Error(`LINE 通知發送失敗（${res.status}）：${(await res.text()).slice(0, 200)}`);
+  }
+  return ids.length;
+}
+
 export async function replyText(replyToken: string, text: string): Promise<void> {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token) {

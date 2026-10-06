@@ -6,7 +6,7 @@ import { Container, inputCls, Spinner } from "@/components/line-ui";
 import { authHeaders, getLiff, isPreviewMode } from "@/lib/liff";
 import { cache } from "@/lib/member-cache";
 
-type Album = { eventName: string; school: string; status: string; albumUrl: string };
+type Album = { eventName: string; photographer: string; status: string; albumUrl: string };
 
 const btnAlbum =
   "mt-3.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-[9px] border-none bg-brand p-3 text-[15px] font-semibold text-white active:bg-brand-dark";
@@ -92,7 +92,7 @@ export default function AlbumPage() {
 
   const kw = q.trim().toLowerCase();
   const list = kw
-    ? albums.filter((a) => a.eventName.toLowerCase().includes(kw) || a.school.toLowerCase().includes(kw))
+    ? albums.filter((a) => a.eventName.toLowerCase().includes(kw) || a.photographer.toLowerCase().includes(kw))
     : albums;
 
   return (
@@ -121,7 +121,7 @@ export default function AlbumPage() {
         {stage === "main" && (
           <div>
             <div className="mb-3.5">
-              <input type="search" className={inputCls} placeholder="搜尋賽事名稱或學校..." value={q} onChange={(e) => setQ(e.target.value)} />
+              <input type="search" className={inputCls} placeholder="搜尋賽事名稱或攝影師..." value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
             {list.length === 0 ? (
               <div className="px-5 py-10 text-center text-[#666]">
@@ -133,11 +133,11 @@ export default function AlbumPage() {
               list.map((a) => {
                 const isPublic = a.status === "已公開" && a.albumUrl;
                 return (
-                  <div key={`${a.eventName}-${a.school}`} className="mb-3 rounded-xl bg-white px-[18px] py-4 shadow-[0_1px_4px_rgba(0,0,0,.08)]">
+                  <div key={`${a.eventName}-${a.photographer}`} className="mb-3 rounded-xl bg-white px-[18px] py-4 shadow-[0_1px_4px_rgba(0,0,0,.08)]">
                     <div className="flex items-start justify-between gap-2.5">
                       <div className="min-w-0 flex-1">
                         <div className="break-all text-[15px] font-semibold leading-snug text-[#222]">{a.eventName}</div>
-                        <div className="mt-1 text-[13px] text-[#666]">🏫 {a.school}</div>
+                        <div className="mt-1 text-[13px] text-[#666]">📷 攝影師：{a.photographer || "未選擇"}</div>
                       </div>
                       <span
                         className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${

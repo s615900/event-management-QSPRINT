@@ -37,7 +37,15 @@ function ChevronIcon({ open }: { open: boolean }) {
 }
 
 // role="staff"（有後台權限的攝影師）只顯示儀表板和我的拍攝行程
-export function Sidebar({ role = "admin", name = "" }: { role?: "admin" | "staff"; name?: string }) {
+export function Sidebar({
+  role = "admin",
+  name = "",
+  albumAccess = false,
+}: {
+  role?: "admin" | "staff";
+  name?: string;
+  albumAccess?: boolean; // 攝影師帳號有相簿權限時多一個「我的相簿」
+}) {
   const isStaff = role === "staff";
   const pathname = usePathname();
   const router = useRouter();
@@ -93,6 +101,15 @@ export function Sidebar({ role = "admin", name = "" }: { role?: "admin" | "staff
               >
                 我的拍攝行程
               </button>
+              {albumAccess && (
+                <button
+                  type="button"
+                  className={`pill-item${activeKey === "my-albums" ? " active" : ""}`}
+                  onClick={() => go("my-albums")}
+                >
+                  我的相簿
+                </button>
+              )}
             </div>
           ) : (
           <>

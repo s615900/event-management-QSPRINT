@@ -15,13 +15,22 @@ interface StaffMember {
   notes: string;
   email: string;
   adminAccess: boolean;
+  albumAccess: boolean;
   active: boolean;
   pick_count: number;
   upcoming_count: number;
 }
 
-type FormFields = { name: string; role: string; phone: string; notes: string; email: string; adminAccess: boolean };
-const emptyForm: FormFields = { name: "", role: ROLES[0], phone: "", notes: "", email: "", adminAccess: false };
+type FormFields = {
+  name: string;
+  role: string;
+  phone: string;
+  notes: string;
+  email: string;
+  adminAccess: boolean;
+  albumAccess: boolean;
+};
+const emptyForm: FormFields = { name: "", role: ROLES[0], phone: "", notes: "", email: "", adminAccess: false, albumAccess: false };
 
 export default function PhotographersPage() {
   const [items, setItems] = useState<StaffMember[]>([]);
@@ -60,7 +69,7 @@ export default function PhotographersPage() {
   const openEdit = (m: StaffMember) => {
     setEditing(m);
     setError(null);
-    setForm({ name: m.name, role: m.role, phone: m.phone, notes: m.notes, email: m.email, adminAccess: m.adminAccess });
+    setForm({ name: m.name, role: m.role, phone: m.phone, notes: m.notes, email: m.email, adminAccess: m.adminAccess, albumAccess: m.albumAccess });
   };
 
   const save = async () => {
@@ -161,6 +170,7 @@ export default function PhotographersPage() {
                   <button type="button" className="staff-name" onClick={() => openEdit(m)}>{m.name}</button>
                   <span className="pill pill-shot">{m.role}</span>
                   {m.adminAccess && <span className="pill pill-registered">後台權限</span>}
+                  {m.adminAccess && m.albumAccess && <span className="pill pill-registered">相簿權限</span>}
                   {!m.active && <span className="pill pill-closed">已停用</span>}
                 </div>
                 <div className="staff-meta">
@@ -222,12 +232,25 @@ export default function PhotographersPage() {
             <div className="form-field toggle-field">
               <label>後台權限（可以用 Google 登入這個後台）</label>
               <label className="switch">
-                <input type="checkbox" checked={form.adminAccess} onChange={(e) => setForm({ ...form, adminAccess: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  checked={form.adminAccess}
+                  onChange={(e) => setForm({ ...form, adminAccess: e.target.checked, albumAccess: e.target.checked && form.albumAccess })}
+                />
                 <span className="slider" />
               </label>
             </div>
             {form.adminAccess && (
-              <p className="page-sub" style={{ marginTop: -6, marginBottom: 12 }}>開放後，這位人員用 Google 登入後台，只能看到「儀表板」和「我的拍攝行程」（被選手選的場次），不能看或修改其他資料。</p>
+              <div className="form-field toggle-field">
+                <label>相簿權限（可以管理自己被選到的賽事相簿：貼連結、開放、通知選手）</label>
+                <label className="switch">
+                  <input type="checkbox" checked={form.albumAccess} onChange={(e) => setForm({ ...form, albumAccess: e.target.checked })} />
+                  <span className="slider" />
+                </label>
+              </div>
+            )}
+            {form.adminAccess && (
+              <p className="page-sub" style={{ marginTop: -6, marginBottom: 12 }}>開放後，這位人員用 Google 登入後台，只能看到「儀表板」和「我的拍攝行程」；再打開「相簿權限」會多一個「我的相簿」，只能管理自己的相簿。</p>
             )}
             {error && <div className="error-hint" style={{ padding: "0 0 12px" }}>{error}</div>}
             <div className="form-field">

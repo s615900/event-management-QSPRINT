@@ -16,6 +16,7 @@ export interface AdminSession {
   name: string;
   role: AdminRole;
   staffId?: number;
+  albumAccess?: boolean; // 攝影師帳號：可管理自己拍攝的相簿（每次從攝影師名單重新讀取）
 }
 
 interface SessionPayload extends AdminSession {
@@ -78,7 +79,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     // 攝影師帳號每次都重新確認：被停用或拿掉後台權限就立刻失效（不用等 cookie 過期）
     const staff = session.staffId !== undefined ? await findStaffAdminById(session.staffId) : null;
     if (!staff || staff.email !== session.email.trim().toLowerCase()) return null;
-    return { ...session, name: staff.name };
+    return { ...session, name: staff.name, albumAccess: staff.albumAccess };
   }
   return session;
 }

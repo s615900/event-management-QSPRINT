@@ -18,7 +18,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   if (!session) redirect("/admin/login");
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-main)" }}>
-      <Sidebar role={session.role} name={session.name} />
+      <Sidebar role={session.role} name={session.name} albumAccess={!!session.albumAccess} />
       {children}
     </div>
   );

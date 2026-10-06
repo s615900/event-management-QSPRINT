@@ -30,6 +30,7 @@ export interface Photographer {
   notes: string;
   email: string; // Google 帳號，打開後台權限時用來登入後台
   adminAccess: boolean; // 可以登入後台（只能看儀表板和自己的拍攝行程）
+  albumAccess: boolean; // 可以在後台管理自己被選到的賽事相簿（需同時有後台權限）
   active: boolean;
 }
 
@@ -61,6 +62,7 @@ function toPhotographer(rec: RagicRecord, id: string): Photographer {
     notes: normalize(rec["備註"]),
     email: normalize(rec["Email"]).toLowerCase(),
     adminAccess: normalize(rec["後台權限"]) === "Yes",
+    albumAccess: normalize(rec["相簿權限"]) === "Yes",
     // 「在職」空白（例如直接在 Ragic 新增時沒選）也當作在職
     active: normalize(rec["在職"]) !== STATUS_INACTIVE,
   };
@@ -148,9 +150,11 @@ export async function findStaffAdmin(email: string): Promise<{ id: number; name:
   return p ? { id: p.id, name: p.name } : null;
 }
 
-export async function findStaffAdminById(id: number): Promise<{ id: number; name: string; email: string } | null> {
+export async function findStaffAdminById(
+  id: number,
+): Promise<{ id: number; name: string; email: string; albumAccess: boolean } | null> {
   const p = (await loadRoster()).find((x) => x.id === id && x.active && x.adminAccess);
-  return p ? { id: p.id, name: p.name, email: p.email } : null;
+  return p ? { id: p.id, name: p.name, email: p.email, albumAccess: p.albumAccess } : null;
 }
 
 export async function listStaffAdmins(): Promise<Array<Pick<Photographer, "id" | "name" | "role" | "email" | "active">>> {
@@ -180,6 +184,7 @@ export interface StaffInput {
   notes?: string;
   email?: string;
   adminAccess?: boolean;
+  albumAccess?: boolean;
   active?: boolean;
 }
 
@@ -188,6 +193,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function checkRole(role: string | undefined) {
   if (role && !(STAFF_ROLES as readonly string[]).includes(role)) {
     throw new StaffError(`職務只能是：${STAFF_ROLES.join("、")}`, 400);
+  }
+}
+
+function checkAlbumField(albumAccess: boolean) {
+  if (albumAccess && !PHOTOGRAPHER_FIELD.albumAccess) {
+    throw new StaffError("Ragic「攝影師名單」還沒有「相簿權限」欄位，請先新增後再開啟", 400);
   }
 }
 
@@ -205,6 +216,7 @@ function toWriteBody(p: Omit<Photographer, "id">): Record<string, string> {
     [PHOTOGRAPHER_FIELD.status]: p.active ? STATUS_ACTIVE : STATUS_INACTIVE,
     [PHOTOGRAPHER_FIELD.adminAccess]: p.adminAccess ? "Yes" : "No",
     [PHOTOGRAPHER_FIELD.notes]: p.notes,
+    ...(PHOTOGRAPHER_FIELD.albumAccess ? { [PHOTOGRAPHER_FIELD.albumAccess]: p.albumAccess ? "Yes" : "No" } : {}),
   };
 }
 
@@ -220,10 +232,12 @@ export async function createStaff(input: StaffInput): Promise<Photographer> {
     notes: input.notes?.trim() ?? "",
     email: input.email?.trim().toLowerCase() ?? "",
     adminAccess: Boolean(input.adminAccess),
+    albumAccess: Boolean(input.albumAccess),
     active: true,
   };
   checkRole(p.role);
   checkEmail(p.email, p.adminAccess);
+  checkAlbumField(p.albumAccess);
   const result = await ragicPost(SHEET.PHOTOGRAPHER, toWriteBody(p), { strict: true });
   clearRosterCache();
   return { ...p, id: Number(result.ragicId ?? 0) };
@@ -248,9 +262,11 @@ export async function updateStaff(id: number, input: StaffInput): Promise<{ befo
   if (input.notes !== undefined) after.notes = input.notes.trim();
   if (input.email !== undefined) after.email = input.email.trim().toLowerCase();
   if (input.adminAccess !== undefined) after.adminAccess = Boolean(input.adminAccess);
+  if (input.albumAccess !== undefined) after.albumAccess = Boolean(input.albumAccess);
   if (input.active !== undefined) after.active = Boolean(input.active);
   checkRole(input.role !== undefined ? after.role : undefined);
   checkEmail(after.email, after.adminAccess);
+  if (input.albumAccess !== undefined) checkAlbumField(after.albumAccess);
 
   const { id: _id, ...fields } = after;
   void _id;
