@@ -34,7 +34,7 @@ interface LookupResponse {
   items: string[];
 }
 
-const GROUP_OPTIONS = ["國中男生", "國中女生", "高中男生", "高中女生", "公開男生", "公開女生"];
+const GROUP_OPTIONS = ["高中男生", "高中女生", "公開男生", "公開女生"];
 const PAGE_SIZE = 20;
 
 type FormFields = {

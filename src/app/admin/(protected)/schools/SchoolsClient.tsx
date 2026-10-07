@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../_lib/api";
-import { COUNTIES } from "@/lib/counties";
+import { COUNTIES, countyRank } from "@/lib/counties";
 
 // 學校名單管理：選手報名頁與後台下拉選單用的學校清單（Ragic 國高中職學校清單）
 
@@ -50,7 +50,12 @@ export default function SchoolsClient() {
     const order: Record<string, number> = { 國中: 1, 高中: 2, 大學: 3 };
     return items
       .filter((s) => (!typeFilter || s.type === typeFilter) && (!countyFilter || s.county === countyFilter) && (!q.trim() || s.name.includes(q.trim())))
-      .sort((a, b) => (order[a.type] || 9) - (order[b.type] || 9) || a.name.localeCompare(b.name, "zh-TW"));
+      .sort(
+        (a, b) =>
+          countyRank(a.county) - countyRank(b.county) ||
+          (order[a.type] || 9) - (order[b.type] || 9) ||
+          a.name.localeCompare(b.name, "zh-TW"),
+      );
   }, [items, q, typeFilter, countyFilter]);
 
   const openCreate = () => {
@@ -108,7 +113,7 @@ export default function SchoolsClient() {
       <div className="header-row">
         <div>
           <h1 className="page-title">學校名單管理</h1>
-          <p className="page-sub">管理選手報名時可以選的學校；依學籍（國中 → 高中 → 大學）排序。</p>
+          <p className="page-sub">管理選手報名時可以選的學校；依縣市（由北到南）排序，同縣市再依學籍（國中 → 高中 → 大學）。</p>
         </div>
         <button type="button" className="btn btn-primary" onClick={openCreate}>新增學校</button>
       </div>
