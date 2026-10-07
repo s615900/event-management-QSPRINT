@@ -8,7 +8,6 @@ import { authHeaders, fetchMember, getLiff, isPreviewMode } from "@/lib/liff";
 import { cache, saveMember } from "@/lib/member-cache";
 
 const GROUPS: { label: string; options: { value: string; disabled?: boolean }[] }[] = [
-  { label: "國中", options: [{ value: "國中男生", disabled: true }, { value: "國中女生", disabled: true }] },
   { label: "高中", options: [{ value: "高中男生" }, { value: "高中女生" }] },
   { label: "公開", options: [{ value: "公開男生" }, { value: "公開女生" }] },
 ];
