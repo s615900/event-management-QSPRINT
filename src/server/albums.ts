@@ -43,6 +43,18 @@ export async function loadAlbums(): Promise<Album[]> {
   return list;
 }
 
+// 相簿表的「賽事名稱」是連結到「賽事資訊總表」的欄位：寫入不在總表裡的名稱時，Ragic 不會報錯，
+// 而是默默存成空白（曾因此產生多筆賽事名稱空白的相簿）。所以儲存前要先確認賽事在總表裡。
+async function loadMasterEventNames(): Promise<Set<string>> {
+  const data = await ragicGet(SHEET.EVENT_LOOKUP);
+  const names = new Set<string>();
+  eachRecord(data, (r) => {
+    const name = normalize(r["賽事名稱"]);
+    if (name) names.add(name);
+  });
+  return names;
+}
+
 // 報名表裡「賽事 → 攝影師 → 選了他的選手」
 type PickIndex = Map<string, { firstDate: string; byPhotographer: Map<string, { count: number; lineUserIds: Set<string> }> }>;
 
@@ -78,7 +90,7 @@ export interface AlbumRow {
  * events：有選手選了攝影師的賽事（新的在前）；rows：選定賽事裡每位攝影師一列。
  */
 export async function albumOverview(eventName: string | null, onlyPhotographer: string | null) {
-  const [albums, picks] = await Promise.all([loadAlbums(), loadPickIndex()]);
+  const [albums, picks, master] = await Promise.all([loadAlbums(), loadPickIndex(), loadMasterEventNames()]);
   const mine = (photographer: string) => !onlyPhotographer || photographer === onlyPhotographer;
 
   const eventNames = new Set<string>();
@@ -96,6 +108,7 @@ export async function albumOverview(eventName: string | null, onlyPhotographer: 
       return {
         eventName: name,
         date: info?.firstDate ?? "",
+        inMaster: master.has(name), // 不在賽事資訊總表 → 無法建立相簿
         photographerCount: photographers.size,
         openCount: evAlbums.filter((a) => a.isOpen).length,
         missingCount: [...photographers].filter((p) => !evAlbums.some((a) => a.photographer === p && a.albumUrl)).length,
@@ -141,7 +154,14 @@ export async function saveAlbum(input: {
   const photographer = normalize(input.photographer);
   if (!eventName || !photographer) throw new AlbumError("缺少賽事或攝影師", 400);
 
-  const before = (await loadAlbums()).find((a) => a.eventName === eventName && a.photographer === photographer) ?? null;
+  const [albums, master] = await Promise.all([loadAlbums(), loadMasterEventNames()]);
+  if (!master.has(eventName)) {
+    throw new AlbumError(
+      `「${eventName}」不在「賽事資訊總表」裡，相簿無法存入。請先到 Ragic 賽事資訊總表新增這個賽事名稱（要一字不差），或把報名的賽事名稱改成總表裡的名稱`,
+      400,
+    );
+  }
+  const before = albums.find((a) => a.eventName === eventName && a.photographer === photographer) ?? null;
   const albumUrl = input.albumUrl !== undefined ? normalize(input.albumUrl) : before?.albumUrl ?? "";
   const isOpen = input.isOpen !== undefined ? Boolean(input.isOpen) : before?.isOpen ?? false;
   checkUrl(albumUrl);

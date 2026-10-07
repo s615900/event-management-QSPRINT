@@ -25,6 +25,7 @@ interface EventSummary {
   photographerCount: number;
   openCount: number;
   missingCount: number;
+  inMaster: boolean; // 不在賽事資訊總表時無法建立相簿
 }
 interface Overview {
   events: EventSummary[];
@@ -165,7 +166,7 @@ export function AlbumManager({ mine = false }: { mine?: boolean }) {
               {data.events.map((ev) => (
                 <option key={ev.eventName} value={ev.eventName}>
                   {ev.eventName}
-                  {ev.missingCount ? `（缺 ${ev.missingCount} 本）` : ""}
+                  {!ev.inMaster ? "（不在賽事資訊總表）" : ev.missingCount ? `（缺 ${ev.missingCount} 本）` : ""}
                 </option>
               ))}
             </select>
@@ -182,6 +183,12 @@ export function AlbumManager({ mine = false }: { mine?: boolean }) {
             )}
           </div>
 
+          {current && !current.inMaster && (
+            <div className="error-hint" style={{ padding: "4px 0 12px", textAlign: "left" }}>
+              ⚠️「{current.eventName}」不在 Ragic「賽事資訊總表」裡，相簿無法存入。請先到賽事資訊總表新增這個賽事名稱（要一字不差），
+              或請管理員把這些報名的賽事名稱改成總表裡的名稱。
+            </div>
+          )}
           {current && (
             <p className="page-sub" style={{ marginBottom: 12 }}>
               {current.date && `${current.date}・`}攝影師 {current.photographerCount} 位・已開放 {current.openCount} 本
@@ -195,7 +202,8 @@ export function AlbumManager({ mine = false }: { mine?: boolean }) {
               const pill = status === "已開放" ? "pill-registered" : status === "未開放" ? "pill-pending" : "pill-closed";
               const url = urls[row.photographer] ?? "";
               const dirty = url.trim() !== (row.album?.albumUrl ?? "");
-              const isBusy = busy === row.photographer || busy === "__all__";
+              const locked = !!current && !current.inMaster;
+              const isBusy = busy === row.photographer || busy === "__all__" || locked;
               return (
                 <div className="staff-row" key={row.photographer}>
                   <div className="staff-avatar">{row.photographer.charAt(0)}</div>
@@ -212,6 +220,7 @@ export function AlbumManager({ mine = false }: { mine?: boolean }) {
                         type="url"
                         placeholder="貼上 Google 雲端資料夾連結 https://drive.google.com/..."
                         value={url}
+                        disabled={locked}
                         onChange={(e) => setUrls({ ...urls, [row.photographer]: e.target.value })}
                       />
                       <button
