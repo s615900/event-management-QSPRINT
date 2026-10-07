@@ -179,10 +179,21 @@ export async function deleteAlbum(id: string, onlyPhotographer: string | null): 
 export async function notifyAlbumOpen(eventName: string, photographer: string): Promise<number> {
   const info = (await loadPickIndex()).get(eventName)?.byPhotographer.get(photographer);
   const ids = [...(info?.lineUserIds ?? [])];
-  if (ids.length === 0) return 0;
+  if (ids.length === 0) {
+    console.info("相簿開放通知：沒有可通知的選手", { eventName, photographer });
+    return 0;
+  }
   const albumPage = `https://liff.line.me/${LIFF_ID}/album`;
-  return multicastText(
-    ids,
-    `📂 你的賽事相簿已開放！\n\n賽事：${eventName}\n攝影師：${photographer}\n\n點這裡查看相簿：\n${albumPage}`,
-  );
+  try {
+    const sent = await multicastText(
+      ids,
+      `📂 你的賽事相簿已開放！\n\n賽事：${eventName}\n攝影師：${photographer}\n\n點這裡查看相簿：\n${albumPage}`,
+    );
+    // 記在伺服器紀錄（Vercel Logs 搜「相簿開放通知」），方便查選手有沒有收到
+    console.info("相簿開放通知", { eventName, photographer, candidates: ids.length, sent });
+    return sent;
+  } catch (err) {
+    console.error("相簿開放通知失敗", { eventName, photographer, candidates: ids.length, err: (err as Error).message });
+    throw err;
+  }
 }
