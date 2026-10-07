@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../_lib/api";
 
 interface EventListItem {
@@ -31,6 +31,9 @@ export default function EventMasterPage() {
   const [items, setItems] = useState<EventListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState("");
+  const [sortDir, setSortDir] = useState<"desc" | "asc">("desc"); // 日期排序：新→舊／舊→新
+  const [dateFrom, setDateFrom] = useState(""); // 日期篩選：賽事期間與這個區間有重疊就顯示
+  const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -38,6 +41,24 @@ export default function EventMasterPage() {
   const [form, setForm] = useState<FormFields | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const shown = useMemo(() => {
+    const list = items.filter((it) => {
+      const start = it.startDate || it.endDate;
+      const end = it.endDate || it.startDate;
+      if (dateFrom && (!end || end < dateFrom)) return false;
+      if (dateTo && (!start || start > dateTo)) return false;
+      return true;
+    });
+    // 沒有日期的賽事一律排最後
+    return list.sort((a, b) => {
+      if (!a.startDate && !b.startDate) return 0;
+      if (!a.startDate) return 1;
+      if (!b.startDate) return -1;
+      const cmp = a.startDate.localeCompare(b.startDate) || a.endDate.localeCompare(b.endDate);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [items, sortDir, dateFrom, dateTo]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -131,6 +152,24 @@ export default function EventMasterPage() {
         <button type="button" className="btn btn-primary" onClick={load}>搜尋</button>
       </div>
 
+      <div className="toolbar" style={{ flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <select className="toolbar-input" style={{ flex: "0 0 auto", width: "auto" }} value={sortDir} onChange={(e) => setSortDir(e.target.value as "desc" | "asc")}>
+          <option value="desc">日期：新 → 舊</option>
+          <option value="asc">日期：舊 → 新</option>
+        </select>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          從
+          <input className="toolbar-input" style={{ flex: "0 0 auto", width: "auto" }} type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          到
+          <input className="toolbar-input" style={{ flex: "0 0 auto", width: "auto" }} type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        </label>
+        {(dateFrom || dateTo) && (
+          <button type="button" className="btn btn-outline" onClick={() => { setDateFrom(""); setDateTo(""); }}>清除日期</button>
+        )}
+      </div>
+
       {msg && <div className="flash-msg">{msg}</div>}
       {error && <div className="error-hint">{error}</div>}
 
@@ -146,9 +185,9 @@ export default function EventMasterPage() {
           </thead>
           <tbody>
             {loading && <tr><td colSpan={4} className="table-status">載入中…</td></tr>}
-            {!loading && items.length === 0 && <tr><td colSpan={4} className="table-status">查無符合條件的賽事資料</td></tr>}
+            {!loading && shown.length === 0 && <tr><td colSpan={4} className="table-status">查無符合條件的賽事資料</td></tr>}
             {!loading &&
-              items.map((item) => (
+              shown.map((item) => (
                 <tr key={item.id}>
                   <td className="cell-title" data-label="賽事名稱">{item.eventName || "（未填賽事名稱）"}</td>
                   <td data-label="日期">
