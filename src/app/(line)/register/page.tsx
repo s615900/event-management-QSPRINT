@@ -1,5 +1,6 @@
 "use client";
 
+import { countyRank } from "@/lib/counties";
 import { useEffect, useState } from "react";
 import { V1Header } from "@/components/v1-ui";
 import { btnPrimary, Card, Container, Field, inputCls, Loading } from "@/components/line-ui";
@@ -162,7 +163,7 @@ export default function RegisterPage() {
   // 縣市：Ragic 學校清單有填「縣市」才顯示縣市選單；沒填縣市的學校歸在「其他／未分類」
   const hasCounty = !!schools?.some((s) => s.county);
   const counties = [...new Set((schools ?? []).map((s) => s.county || NO_COUNTY))].sort((a, b) =>
-    a === NO_COUNTY ? 1 : b === NO_COUNTY ? -1 : a.localeCompare(b, "zh-TW"),
+    a === NO_COUNTY ? 1 : b === NO_COUNTY ? -1 : countyRank(a) - countyRank(b) || a.localeCompare(b, "zh-TW"),
   );
   const schoolsInCounty = !schools ? [] : hasCounty ? schools.filter((s) => (s.county || NO_COUNTY) === county) : schools;
 
