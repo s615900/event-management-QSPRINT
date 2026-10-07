@@ -6,11 +6,16 @@ import { api } from "../_lib/api";
 // 學校名單管理：選手報名頁與後台下拉選單用的學校清單（Ragic 國高中職學校清單）
 
 const TYPES = ["國中", "高中", "大學"];
+const COUNTIES = [
+  "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市", "基隆市", "新竹市", "嘉義市",
+  "新竹縣", "苗栗縣", "彰化縣", "南投縣", "雲林縣", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣",
+];
 
 interface School {
   id: string;
   name: string;
   type: string;
+  county: string;
 }
 
 export default function SchoolsClient() {
@@ -20,7 +25,8 @@ export default function SchoolsClient() {
   const [msg, setMsg] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [form, setForm] = useState<{ name: string; type: string } | null>(null);
+  const [countyFilter, setCountyFilter] = useState("");
+  const [form, setForm] = useState<{ name: string; type: string; county: string } | null>(null);
   const [editing, setEditing] = useState<School | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -46,20 +52,20 @@ export default function SchoolsClient() {
   const shown = useMemo(() => {
     const order: Record<string, number> = { 國中: 1, 高中: 2, 大學: 3 };
     return items
-      .filter((s) => (!typeFilter || s.type === typeFilter) && (!q.trim() || s.name.includes(q.trim())))
+      .filter((s) => (!typeFilter || s.type === typeFilter) && (!countyFilter || s.county === countyFilter) && (!q.trim() || s.name.includes(q.trim())))
       .sort((a, b) => (order[a.type] || 9) - (order[b.type] || 9) || a.name.localeCompare(b.name, "zh-TW"));
-  }, [items, q, typeFilter]);
+  }, [items, q, typeFilter, countyFilter]);
 
   const openCreate = () => {
     setEditing(null);
     setError(null);
-    setForm({ name: "", type: TYPES[1] });
+    setForm({ name: "", type: TYPES[1], county: "" });
   };
 
   const openEdit = (s: School) => {
     setEditing(s);
     setError(null);
-    setForm({ name: s.name, type: s.type });
+    setForm({ name: s.name, type: s.type, county: s.county });
   };
 
   const save = async () => {
@@ -125,6 +131,10 @@ export default function SchoolsClient() {
           <option value="">全部學籍</option>
           {TYPES.map((t) => <option key={t}>{t}</option>)}
         </select>
+        <select value={countyFilter} onChange={(e) => setCountyFilter(e.target.value)}>
+          <option value="">全部縣市</option>
+          {COUNTIES.map((c) => <option key={c}>{c}</option>)}
+        </select>
       </div>
 
       <div className="staff-list">
@@ -140,6 +150,7 @@ export default function SchoolsClient() {
               <div className="staff-main">
                 <div className="staff-name-line">
                   <button type="button" className="staff-name" onClick={() => openEdit(s)}>{s.name}</button>
+                  {s.county && <span className="pill pill-registered">{s.county}</span>}
                   {s.type && <span className="pill pill-shot">{s.type}</span>}
                 </div>
               </div>
@@ -158,6 +169,14 @@ export default function SchoolsClient() {
             <div className="form-field">
               <label>學校名稱 *</label>
               <input type="text" value={form.name} placeholder="例：臺北市立建國高級中學" onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="form-field">
+              <label>縣市</label>
+              <select value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })}>
+                <option value="">未選擇</option>
+                {form.county && !COUNTIES.includes(form.county) && <option>{form.county}</option>}
+                {COUNTIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
             </div>
             <div className="form-field">
               <label>學籍</label>

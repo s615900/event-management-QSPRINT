@@ -12,6 +12,8 @@ const GROUPS: { label: string; options: { value: string; disabled?: boolean }[] 
   { label: "公開", options: [{ value: "公開男生" }, { value: "公開女生" }] },
 ];
 
+type SchoolItem = { name: string; type: string; county: string };
+const NO_COUNTY = "其他／未分類";
 type Form = { playerName: string; group: string; school: string; phone: string; email: string; ig: string };
 type Errors = Partial<Record<keyof Form, boolean>>;
 
@@ -21,7 +23,8 @@ export default function RegisterPage() {
   const [lineUid, setLineUid] = useState("");
   const [picture, setPicture] = useState("");
   const [idToken, setIdToken] = useState("");
-  const [schools, setSchools] = useState<string[] | null>(null);
+  const [schools, setSchools] = useState<SchoolItem[] | null>(null);
+  const [county, setCounty] = useState("");
   const [schoolError, setSchoolError] = useState(false);
   const [form, setForm] = useState<Form>({ playerName: "", group: "", school: "", phone: "", email: "", ig: "@" });
   const [errors, setErrors] = useState<Errors>({});
@@ -156,6 +159,13 @@ export default function RegisterPage() {
     }
   }
 
+  // 縣市：Ragic 學校清單有填「縣市」才顯示縣市選單；沒填縣市的學校歸在「其他／未分類」
+  const hasCounty = !!schools?.some((s) => s.county);
+  const counties = [...new Set((schools ?? []).map((s) => s.county || NO_COUNTY))].sort((a, b) =>
+    a === NO_COUNTY ? 1 : b === NO_COUNTY ? -1 : a.localeCompare(b, "zh-TW"),
+  );
+  const schoolsInCounty = !schools ? [] : hasCounty ? schools.filter((s) => (s.county || NO_COUNTY) === county) : schools;
+
   return (
     <>
       <V1Header title="📝 選手資料登錄" subtitle="請填寫選手基本資料（僅需填寫一次）" back />
@@ -204,10 +214,27 @@ export default function RegisterPage() {
                   ))}
                 </select>
               </Field>
+              {hasCounty && (
+                <Field label="縣市" required={false}>
+                  <select
+                    className={inputCls}
+                    value={county}
+                    onChange={(e) => {
+                      setCounty(e.target.value);
+                      setForm((f) => ({ ...f, school: "" }));
+                    }}
+                  >
+                    <option value="">{schools ? "請選擇縣市" : "載入中..."}</option>
+                    {counties.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </Field>
+              )}
               <Field label="學校" required error={errors.school && "請選擇學校"}>
-                <select className={inputCls} value={form.school} onChange={set("school")}>
-                  <option value="">{schoolError ? "載入失敗，請重新整理" : schools ? "請選擇學校" : "載入學校清單中..."}</option>
-                  {schools?.map((s) => <option key={s} value={s}>{s}</option>)}
+                <select className={inputCls} value={form.school} onChange={set("school")} disabled={hasCounty && !county}>
+                  <option value="">
+                    {schoolError ? "載入失敗，請重新整理" : !schools ? "載入學校清單中..." : hasCounty && !county ? "請先選擇縣市" : "請選擇學校"}
+                  </option>
+                  {schoolsInCounty.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                 </select>
               </Field>
               <Field label="電話" required error={errors.phone && "請填寫電話"}>

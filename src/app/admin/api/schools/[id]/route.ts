@@ -13,12 +13,15 @@ export const PATCH = schoolRoute("更新學校失敗", async (req: NextRequest, 
   const body = await readBody(req);
   const name = normalize(body.name);
   const type = normalize(body.type);
+  const county = normalize(body.county);
   if (!name) return Response.json({ error: "請填寫學校名稱" }, { status: 400 });
-  await ragicPost(`${SHEET.SCHOOL_LOOKUP}/${id}`, { [SCHOOL_FIELD.name]: name, [SCHOOL_FIELD.type]: type }, { strict: true });
+  await ragicPost(`${SHEET.SCHOOL_LOOKUP}/${id}`, { [SCHOOL_FIELD.name]: name, [SCHOOL_FIELD.type]: type, [SCHOOL_FIELD.county]: county }, { strict: true });
   const oldName = normalize(before["學校名稱"]);
   const oldType = normalize(before["學籍"]);
   const changes: string[] = [];
   if (oldName !== name) changes.push(`學校名稱：「${oldName}」→「${name}」`);
+  const oldCounty = normalize(before["縣市"]);
+  if (oldCounty !== county) changes.push(`縣市：「${oldCounty}」→「${county}」`);
   if (oldType !== type) changes.push(`學籍：「${oldType}」→「${type}」`);
   if (changes.length) await writeAuditLog(session, "編輯", `學校名單 - ${oldName}`, changes.join("；"));
   return Response.json({ success: true });

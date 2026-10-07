@@ -210,6 +210,7 @@ export const PHOTOGRAPHER_FIELD = {
 export const SCHOOL_FIELD = {
   name: "1001213",
   type: "1001214", // 學籍：國中／高中／大學
+  county: "1001466", // 縣市（選單）：報名頁依縣市篩選學校
 } as const;
 
 // 賽事相簿連結（new-beta/7）
