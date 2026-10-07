@@ -202,8 +202,7 @@ export const PHOTOGRAPHER_FIELD = {
   status: "1001458", // 單選：在職／離職
   adminAccess: "1001459", // 勾選：Yes／No
   notes: "1001460",
-  // 勾選：Yes／No，可在後台管理自己拍攝的相簿。空白＝Ragic 尚未新增此欄位
-  albumAccess: "" as string,
+  albumAccess: "1001463" as string, // 勾選：Yes／No，可在後台管理自己拍攝的相簿
 } as const;
 
 // 賽事相簿連結（new-beta/7）
@@ -212,8 +211,7 @@ export const ALBUM_FIELD = {
   albumUrl: "1001218",
   school: "1001220", // 舊版依學校分相簿用的欄位，現在不再寫入
   isOpen: "1001221", // 勾選欄位，值為 "Yes" / "No"
-  // 相簿改成「賽事＋攝影師」一個資料夾（存攝影師名稱，文字欄位）。空白＝Ragic 尚未新增此欄位
-  photographer: "" as string,
+  photographer: "1001464" as string, // 相簿＝「賽事＋攝影師」一個資料夾（存攝影師名稱，文字欄位）
 } as const;
 
 // 後台網站管理員清單（new-test-parameters/6）——欄位 ID 取自 Ragic 表單結構
