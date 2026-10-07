@@ -16,6 +16,7 @@ interface StaffMember {
   email: string;
   adminAccess: boolean;
   albumAccess: boolean;
+  schoolAccess: boolean;
   active: boolean;
   pick_count: number;
   upcoming_count: number;
@@ -29,8 +30,9 @@ type FormFields = {
   email: string;
   adminAccess: boolean;
   albumAccess: boolean;
+  schoolAccess: boolean;
 };
-const emptyForm: FormFields = { name: "", role: ROLES[0], phone: "", notes: "", email: "", adminAccess: false, albumAccess: false };
+const emptyForm: FormFields = { name: "", role: ROLES[0], phone: "", notes: "", email: "", adminAccess: false, albumAccess: false, schoolAccess: false };
 
 export default function PhotographersPage() {
   const [items, setItems] = useState<StaffMember[]>([]);
@@ -69,7 +71,7 @@ export default function PhotographersPage() {
   const openEdit = (m: StaffMember) => {
     setEditing(m);
     setError(null);
-    setForm({ name: m.name, role: m.role, phone: m.phone, notes: m.notes, email: m.email, adminAccess: m.adminAccess, albumAccess: m.albumAccess });
+    setForm({ name: m.name, role: m.role, phone: m.phone, notes: m.notes, email: m.email, adminAccess: m.adminAccess, albumAccess: m.albumAccess, schoolAccess: m.schoolAccess });
   };
 
   const save = async () => {
@@ -171,6 +173,7 @@ export default function PhotographersPage() {
                   <span className="pill pill-shot">{m.role}</span>
                   {m.adminAccess && <span className="pill pill-registered">後台權限</span>}
                   {m.adminAccess && m.albumAccess && <span className="pill pill-registered">相簿權限</span>}
+                  {m.adminAccess && m.schoolAccess && <span className="pill pill-registered">學校名單權限</span>}
                   {!m.active && <span className="pill pill-closed">已停用</span>}
                 </div>
                 <div className="staff-meta">
@@ -235,7 +238,7 @@ export default function PhotographersPage() {
                 <input
                   type="checkbox"
                   checked={form.adminAccess}
-                  onChange={(e) => setForm({ ...form, adminAccess: e.target.checked, albumAccess: e.target.checked && form.albumAccess })}
+                  onChange={(e) => setForm({ ...form, adminAccess: e.target.checked, albumAccess: e.target.checked && form.albumAccess, schoolAccess: e.target.checked && form.schoolAccess })}
                 />
                 <span className="slider" />
               </label>
@@ -245,6 +248,15 @@ export default function PhotographersPage() {
                 <label>相簿權限（可以管理自己被選到的賽事相簿：貼連結、開放、通知選手）</label>
                 <label className="switch">
                   <input type="checkbox" checked={form.albumAccess} onChange={(e) => setForm({ ...form, albumAccess: e.target.checked })} />
+                  <span className="slider" />
+                </label>
+              </div>
+            )}
+            {form.adminAccess && (
+              <div className="form-field toggle-field">
+                <label>學校名單權限（可以新增、編輯、刪除學校名單）</label>
+                <label className="switch">
+                  <input type="checkbox" checked={form.schoolAccess} onChange={(e) => setForm({ ...form, schoolAccess: e.target.checked })} />
                   <span className="slider" />
                 </label>
               </div>

@@ -203,6 +203,13 @@ export const PHOTOGRAPHER_FIELD = {
   adminAccess: "1001459", // 勾選：Yes／No
   notes: "1001460",
   albumAccess: "1001463" as string, // 勾選：Yes／No，可在後台管理自己拍攝的相簿
+  schoolAccess: "1001465" as string, // 勾選：Yes／No，可在後台管理學校名單（欄位名稱「學校名單權限」；在 Ragic 新增欄位後填入欄位 ID）
+} as const;
+
+// 國高中職學校清單（new-test-parameters/2）
+export const SCHOOL_FIELD = {
+  name: "1001213",
+  type: "1001214", // 學籍：國中／高中／大學
 } as const;
 
 // 賽事相簿連結（new-beta/7）

@@ -10,6 +10,10 @@ const eventNavItems: Array<{ key: ViewKey; label: string }> = [
   { key: "registrations", label: "賽事報名資料" },
   { key: "event-master", label: "賽事資訊總表" },
   { key: "albums", label: "相簿管理" },
+  { key: "schools", label: "學校名單管理" },
+];
+
+const permissionNavItems: Array<{ key: ViewKey; label: string }> = [
   { key: "photographers", label: "攝影師管理" },
   { key: "admins", label: "管理員權限" },
 ];
@@ -41,10 +45,12 @@ export function Sidebar({
   role = "admin",
   name = "",
   albumAccess = false,
+  schoolAccess = false,
 }: {
   role?: "admin" | "staff";
   name?: string;
   albumAccess?: boolean; // 攝影師帳號有相簿權限時多一個「我的相簿」
+  schoolAccess?: boolean; // 攝影師帳號有學校名單權限時多一個「學校名單管理」
 }) {
   const isStaff = role === "staff";
   const pathname = usePathname();
@@ -52,7 +58,8 @@ export function Sidebar({
   const activeKey: ViewKey = PATH_TO_VIEW[pathname] ?? "dashboard";
   const onNavigate = (key: ViewKey) => router.push(VIEW_TO_PATH[key]);
   const [eventGroupOpen, setEventGroupOpen] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(true);
+  const [permGroupOpen, setPermGroupOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false); // 設定預設收合
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const go = (key: ViewKey) => {
@@ -110,6 +117,15 @@ export function Sidebar({
                   我的相簿
                 </button>
               )}
+              {schoolAccess && (
+                <button
+                  type="button"
+                  className={`pill-item${activeKey === "schools" ? " active" : ""}`}
+                  onClick={() => go("schools")}
+                >
+                  學校名單管理
+                </button>
+              )}
             </div>
           ) : (
           <>
@@ -120,6 +136,25 @@ export function Sidebar({
           {eventGroupOpen && (
             <div className="group-body">
               {eventNavItems.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  className={`pill-item${activeKey === item.key ? " active" : ""}`}
+                  onClick={() => go(item.key)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button type="button" className="group-head" onClick={() => setPermGroupOpen((o) => !o)}>
+            <span>權限管理</span>
+            <ChevronIcon open={permGroupOpen} />
+          </button>
+          {permGroupOpen && (
+            <div className="group-body">
+              {permissionNavItems.map((item) => (
                 <button
                   key={item.key}
                   type="button"

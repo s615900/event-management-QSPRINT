@@ -38,6 +38,9 @@ export const PATCH = adminRoute("更新人員失敗", async (req: NextRequest, s
     if (before.albumAccess !== after.albumAccess) {
       await writeAuditLog(session, "開關切換", `攝影師名單 - ${after.name}`, `相簿權限：「${before.albumAccess ? "有" : "無"}」→「${after.albumAccess ? "有" : "無"}」`);
     }
+    if (before.schoolAccess !== after.schoolAccess) {
+      await writeAuditLog(session, "開關切換", `攝影師名單 - ${after.name}`, `學校名單權限：「${before.schoolAccess ? "有" : "無"}」→「${after.schoolAccess ? "有" : "無"}」`);
+    }
     if (before.adminAccess !== after.adminAccess) {
       await writeAuditLog(session, "開關切換", `攝影師名單 - ${after.name}`, `後台權限：「${before.adminAccess ? "可登入" : "無"}」→「${after.adminAccess ? "可登入" : "無"}」`);
     }

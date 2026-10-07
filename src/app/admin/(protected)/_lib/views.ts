@@ -1,4 +1,4 @@
-export type ViewKey = "dashboard" | "weekly-events" | "members" | "registrations" | "event-master" | "albums" | "photographers" | "admins" | "my-schedule" | "my-albums";
+export type ViewKey = "dashboard" | "weekly-events" | "members" | "registrations" | "event-master" | "albums" | "photographers" | "admins" | "schools" | "my-schedule" | "my-albums";
 
 export const VIEW_TITLES: Record<ViewKey, string> = {
   dashboard: "儀表板",
@@ -9,6 +9,7 @@ export const VIEW_TITLES: Record<ViewKey, string> = {
   albums: "相簿管理",
   photographers: "攝影師管理",
   admins: "管理員權限",
+  schools: "學校名單管理",
   "my-schedule": "我的拍攝行程",
   "my-albums": "我的相簿",
 };
@@ -23,6 +24,7 @@ export const VIEW_TO_PATH: Record<ViewKey, string> = {
   albums: "/admin/albums",
   photographers: "/admin/photographers",
   admins: "/admin/admins",
+  schools: "/admin/schools",
   "my-schedule": "/admin/my-schedule",
   "my-albums": "/admin/my-albums",
 };

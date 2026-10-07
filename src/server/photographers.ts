@@ -31,6 +31,7 @@ export interface Photographer {
   email: string; // Google 帳號，打開後台權限時用來登入後台
   adminAccess: boolean; // 可以登入後台（只能看儀表板和自己的拍攝行程）
   albumAccess: boolean; // 可以在後台管理自己被選到的賽事相簿（需同時有後台權限）
+  schoolAccess: boolean; // 可以在後台管理學校名單（需同時有後台權限）
   active: boolean;
 }
 
@@ -63,6 +64,7 @@ function toPhotographer(rec: RagicRecord, id: string): Photographer {
     email: normalize(rec["Email"]).toLowerCase(),
     adminAccess: normalize(rec["後台權限"]) === "Yes",
     albumAccess: normalize(rec["相簿權限"]) === "Yes",
+    schoolAccess: normalize(rec["學校名單權限"]) === "Yes",
     // 「在職」空白（例如直接在 Ragic 新增時沒選）也當作在職
     active: normalize(rec["在職"]) !== STATUS_INACTIVE,
   };
@@ -152,9 +154,9 @@ export async function findStaffAdmin(email: string): Promise<{ id: number; name:
 
 export async function findStaffAdminById(
   id: number,
-): Promise<{ id: number; name: string; email: string; albumAccess: boolean } | null> {
+): Promise<{ id: number; name: string; email: string; albumAccess: boolean; schoolAccess: boolean } | null> {
   const p = (await loadRoster()).find((x) => x.id === id && x.active && x.adminAccess);
-  return p ? { id: p.id, name: p.name, email: p.email, albumAccess: p.albumAccess } : null;
+  return p ? { id: p.id, name: p.name, email: p.email, albumAccess: p.albumAccess, schoolAccess: p.schoolAccess } : null;
 }
 
 export async function listStaffAdmins(): Promise<Array<Pick<Photographer, "id" | "name" | "role" | "email" | "active">>> {
@@ -185,6 +187,7 @@ export interface StaffInput {
   email?: string;
   adminAccess?: boolean;
   albumAccess?: boolean;
+  schoolAccess?: boolean;
   active?: boolean;
 }
 
@@ -199,6 +202,12 @@ function checkRole(role: string | undefined) {
 function checkAlbumField(albumAccess: boolean) {
   if (albumAccess && !PHOTOGRAPHER_FIELD.albumAccess) {
     throw new StaffError("Ragic「攝影師名單」還沒有「相簿權限」欄位，請先新增後再開啟", 400);
+  }
+}
+
+function checkSchoolField(schoolAccess: boolean) {
+  if (schoolAccess && !PHOTOGRAPHER_FIELD.schoolAccess) {
+    throw new StaffError("Ragic「攝影師名單」還沒有「學校名單權限」欄位，請先新增後再開啟", 400);
   }
 }
 
@@ -217,6 +226,7 @@ function toWriteBody(p: Omit<Photographer, "id">): Record<string, string> {
     [PHOTOGRAPHER_FIELD.adminAccess]: p.adminAccess ? "Yes" : "No",
     [PHOTOGRAPHER_FIELD.notes]: p.notes,
     ...(PHOTOGRAPHER_FIELD.albumAccess ? { [PHOTOGRAPHER_FIELD.albumAccess]: p.albumAccess ? "Yes" : "No" } : {}),
+    ...(PHOTOGRAPHER_FIELD.schoolAccess ? { [PHOTOGRAPHER_FIELD.schoolAccess]: p.schoolAccess ? "Yes" : "No" } : {}),
   };
 }
 
@@ -233,11 +243,13 @@ export async function createStaff(input: StaffInput): Promise<Photographer> {
     email: input.email?.trim().toLowerCase() ?? "",
     adminAccess: Boolean(input.adminAccess),
     albumAccess: Boolean(input.albumAccess),
+    schoolAccess: Boolean(input.schoolAccess),
     active: true,
   };
   checkRole(p.role);
   checkEmail(p.email, p.adminAccess);
   checkAlbumField(p.albumAccess);
+  checkSchoolField(p.schoolAccess);
   const result = await ragicPost(SHEET.PHOTOGRAPHER, toWriteBody(p), { strict: true });
   clearRosterCache();
   return { ...p, id: Number(result.ragicId ?? 0) };
@@ -263,10 +275,12 @@ export async function updateStaff(id: number, input: StaffInput): Promise<{ befo
   if (input.email !== undefined) after.email = input.email.trim().toLowerCase();
   if (input.adminAccess !== undefined) after.adminAccess = Boolean(input.adminAccess);
   if (input.albumAccess !== undefined) after.albumAccess = Boolean(input.albumAccess);
+  if (input.schoolAccess !== undefined) after.schoolAccess = Boolean(input.schoolAccess);
   if (input.active !== undefined) after.active = Boolean(input.active);
   checkRole(input.role !== undefined ? after.role : undefined);
   checkEmail(after.email, after.adminAccess);
   if (input.albumAccess !== undefined) checkAlbumField(after.albumAccess);
+  if (input.schoolAccess !== undefined) checkSchoolField(after.schoolAccess);
 
   const { id: _id, ...fields } = after;
   void _id;
