@@ -86,10 +86,11 @@ export const GET = adminRoute("查詢儀表板總覽失敗", async (_req, sessio
   return Response.json({
     weeklyEventCount: weeklyEventNames.size,
     newMembersThisMonth,
-    totalMembers: members.length,
+    // 攝影師帳號不提供總選手數與近期選手（選手個資只給管理員）
+    totalMembers: session.role === "staff" ? null : members.length,
     albumsPendingCount,
     upcomingEvents,
-    recentMembers,
+    recentMembers: session.role === "staff" ? [] : recentMembers,
     masterEvents,
     viewer: { role: session.role, name: session.name },
   });

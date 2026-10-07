@@ -26,7 +26,7 @@ interface MasterEvent {
 interface DashboardData {
   weeklyEventCount: number;
   newMembersThisMonth: number;
-  totalMembers: number;
+  totalMembers: number | null; // 攝影師帳號為 null
   albumsPendingCount: number;
   upcomingEvents: UpcomingEvent[];
   recentMembers: RecentMember[];
@@ -105,16 +105,18 @@ export default function DashboardPage() {
     );
   }
 
-  const stats = [
+  // 攝影師帳號只能看儀表板和自己的行程：不顯示總選手數、近期選手，也不顯示通往其他管理頁的按鈕
+  const isStaff = data.viewer?.role === "staff";
+
+  const allStats = [
     { key: "weekly", label: "本週賽事", value: data.weeklyEventCount, iconBg: "var(--color-pending-bg)", iconColor: "#B5790A", icon: "calendar" },
     { key: "newMembers", label: "本月新選手", value: data.newMembersThisMonth, iconBg: "var(--color-success-bg)", iconColor: "#1F8A55", icon: "userPlus" },
     { key: "totalMembers", label: "總選手數", value: data.totalMembers, iconBg: "var(--color-info-bg)", iconColor: "#0E3A5C", icon: "users" },
     { key: "albumsPending", label: "待開放相簿", value: data.albumsPendingCount, iconBg: "#F0E3F7", iconColor: "#8A4FA0", icon: "calendar" },
   ];
+  const stats = isStaff ? allStats.filter((s) => s.key !== "totalMembers") : allStats;
 
   const masterEventList = data.masterEvents.slice(0, 4);
-  // 攝影師帳號只能看儀表板和自己的行程，不顯示通往其他管理頁的按鈕
-  const isStaff = data.viewer?.role === "staff";
 
   return (
     <main className="main">
@@ -139,7 +141,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="stat-grid">
+      <div className={`stat-grid${isStaff ? " stat-grid-3" : ""}`}>
         {stats.map((s) => (
           <div className="card" key={s.key}>
             <div className="stat-top">
@@ -153,7 +155,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="two-col">
+      <div className="two-col" style={isStaff ? { gridTemplateColumns: "1fr" } : undefined}>
         <div className="panel">
           <div className="panel-head">
             <span className="panel-title">近期賽事</span>
@@ -182,6 +184,7 @@ export default function DashboardPage() {
           })}
         </div>
 
+        {!isStaff && (
         <div className="panel">
           <div className="panel-head">
             <span className="panel-title">近期選手</span>
@@ -206,6 +209,7 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       <div className="events-head">
