@@ -69,8 +69,8 @@ export function Sidebar({
 
   return (
     <>
-      <button type="button" className="sidebar-toggle" aria-label="開啟選單" onClick={() => setDrawerOpen(true)}>
-        ☰
+      <button type="button" className="sidebar-toggle" aria-label={drawerOpen ? "關閉選單" : "開啟選單"} onClick={() => setDrawerOpen((o) => !o)}>
+        {drawerOpen ? "✕" : "☰"}
       </button>
       <div className={`sidebar-backdrop${drawerOpen ? " show" : ""}`} onClick={() => setDrawerOpen(false)} />
       <aside className={`sidebar${drawerOpen ? " open" : ""}`}>
