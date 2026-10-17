@@ -1,0 +1,85 @@
+/* 後台 iPhone / iOS 手機版調整（只在手機寬度生效，電腦版不受影響）
+   重點：瀏海／動態島安全區、輸入框不被 iOS 自動放大、100dvh、彈窗、觸控大小 */
+
+html { -webkit-text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+
+@media (max-width: 900px) {
+  /* 加入主畫面後，狀態列為透明（black-translucent），選單按鈕與內容要避開瀏海 */
+  .sidebar-toggle {
+    top: calc(env(safe-area-inset-top) + 10px);
+    left: calc(env(safe-area-inset-left) + 12px);
+    width: 44px;
+    height: 44px;
+  }
+  .main {
+    padding-top: calc(env(safe-area-inset-top) + 66px);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+  }
+  .page-title { font-size: 22px; }
+
+  /* 抽屜選單：避開瀏海與 Home 橫條、不要捲動穿透、使用動態視窗高度 */
+  .sidebar {
+    width: min(280px, 86vw);
+    height: 100dvh;
+    padding-top: calc(env(safe-area-inset-top) + 20px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    padding-left: max(14px, env(safe-area-inset-left));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .top-item, .pill-item, .group-head, .settings-head, .logout-btn { min-height: 44px; }
+}
+
+@media (max-width: 768px) {
+  /* 輸入框字級 16px 以上，iOS 點擊時才不會自動放大畫面 */
+  .toolbar-input,
+  .toolbar-select,
+  .form-field input,
+  .form-field select,
+  .form-field textarea,
+  .auth-page input,
+  .auth-page select,
+  .auth-page textarea {
+    font-size: 16px;
+    height: 44px;
+  }
+  .form-field textarea { height: auto; min-height: 88px; }
+  .toolbar-input, .toolbar-select { flex: 1 1 100%; min-width: 0; width: 100%; }
+  .toolbar-range { flex: 1 1 100%; flex-wrap: wrap; }
+  .toolbar-date, .toolbar-time { flex: 1 1 120px; width: auto; }
+  input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; min-width: 0; }
+  select { -webkit-appearance: none; appearance: none; }
+
+  /* 按鈕與連結的觸控區 ≥ 44px */
+  .btn { min-height: 44px; justify-content: center; }
+  .link-btn { min-height: 44px; padding: 0 6px; font-size: 14px; }
+  .cell-actions { gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .panel-link { min-height: 44px; }
+
+  /* 彈窗：改成貼底的抽屜式，避開 Home 橫條，內容可捲動 */
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+    padding-top: env(safe-area-inset-top);
+  }
+  .modal {
+    max-width: none;
+    max-height: calc(100dvh - env(safe-area-inset-top) - 16px);
+    border-radius: 18px 18px 0 0;
+    padding: 20px 18px calc(env(safe-area-inset-bottom) + 20px);
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-actions { position: sticky; bottom: 0; background: #fff; padding-top: 12px; }
+  .modal-actions .btn { flex: 1; }
+
+  /* 分頁列、版面微調 */
+  .pager { justify-content: center; }
+  .pager-info { width: 100%; text-align: center; }
+  .stat-value { font-size: 26px; }
+  .week-nav { padding: 12px; }
+  .data-table td { font-size: 14px; }
+}

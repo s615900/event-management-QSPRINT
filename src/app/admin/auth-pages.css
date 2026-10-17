@@ -51,3 +51,19 @@
 }
 
 html, body { margin: 0; padding: 0; }
+
+/* iPhone 手機版：安全區與輸入框字級 */
+.auth-page {
+  min-height: 100dvh;
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+}
+.auth-google-btn { min-height: 48px; }
+@media (max-width: 480px) {
+  .auth-card { padding: 28px 20px; }
+}
+@media (max-width: 768px) {
+  .auth-page input, .auth-page select { font-size: 16px; }
+}

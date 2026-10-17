@@ -11,6 +11,7 @@ import "./styles/EventMasterPage.css";
 import "./styles/AlbumsPage.css";
 import "./styles/StaffPage.css";
 import "./styles/theme.css";
+import "./styles/mobile-ios.css"; // iOS 手機版覆蓋樣式（放最後）
 
 // 受保護的後台：未登入一律導去登入頁（頁面與 /admin/api/* 都會檢查）
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
