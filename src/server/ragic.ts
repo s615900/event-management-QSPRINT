@@ -204,6 +204,7 @@ export const PHOTOGRAPHER_FIELD = {
   notes: "1001460",
   albumAccess: "1001463" as string, // 勾選：Yes／No，可在後台管理自己拍攝的相簿
   schoolAccess: "1001465" as string, // 勾選：Yes／No，可在後台管理學校名單（欄位名稱「學校名單權限」；在 Ragic 新增欄位後填入欄位 ID）
+  lineUserId: "1001500" as string, // 文字：LINE 推播用的 userId（欄位名稱「LINE User ID」，須為「自由輸入」類型），傳綁定碼後自動寫入
 } as const;
 
 // 國高中職學校清單（new-test-parameters/2）
@@ -227,6 +228,7 @@ export const ADMIN_FIELD = {
   name: "1001229",
   email: "1001230",
   status: "1001231", // 「啟用」/「停用」
+  lineUserId: "1001499" as string, // 文字：LINE 推播用的 userId（欄位名稱「LINE User ID」，須為「自由輸入」類型）
 } as const;
 
 // 操作紀錄表（new-test-parameters/5）

@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { requireLineIdentity } from "@/server/line";
 import { findMemberRecord, uploadLinePictureToRagic } from "@/server/qsprint";
 import { MEMBER_FIELD, ragicPost, SHEET } from "@/server/ragic";
+import { notifyStaffAndAdmins } from "@/server/notify";
 import { readBody, serverError } from "@/server/http";
 
 // 新增／更新會員資料（寫入用數字欄位代碼）
@@ -32,6 +33,16 @@ export async function POST(req: Request) {
 
     // 把 LINE 大頭照帶入「上傳圖片（認臉時確認）」欄位；回應送出後才執行，失敗不影響登錄結果
     after(() => uploadLinePictureToRagic(SHEET.MEMBER, ragicId, MEMBER_FIELD.picture, pictureUrl));
+
+    // 首次加入（沒有舊記錄）才通知攝影師與管理員；更新資料不通知
+    if (!existing) {
+      after(() =>
+        notifyStaffAndAdmins(
+          ["🆕 新選手加入", `姓名：${playerName || "—"}`, `學校：${school || "—"}`, `組別：${group || "—"}`].join("\n"),
+          "all",
+        ),
+      );
+    }
 
     return Response.json({ success: true, result });
   } catch (err) {

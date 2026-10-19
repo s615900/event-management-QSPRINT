@@ -26,6 +26,14 @@ interface AdminsResponse {
   me: string;
 }
 
+interface LineRecipient {
+  kind: "staff" | "admin";
+  id: string;
+  name: string;
+  bound: boolean;
+  code: string;
+}
+
 type FormFields = { name: string; email: string };
 
 export default function AdminsPage() {
@@ -37,6 +45,7 @@ export default function AdminsPage() {
   const [editing, setEditing] = useState<AdminAccount | null>(null);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [recipients, setRecipients] = useState<{ items: LineRecipient[]; fieldsReady: boolean } | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -50,6 +59,7 @@ export default function AdminsPage() {
 
   useEffect(() => {
     load();
+    api.get<{ items: LineRecipient[]; fieldsReady: boolean }>("/line-recipients").then(setRecipients).catch(() => {});
   }, [load]);
 
   const flash = (text: string) => {
@@ -210,6 +220,43 @@ export default function AdminsPage() {
                 <td data-label="可否登入">
                   <span className={`pill ${s.active ? "pill-registered" : "pill-closed"}`}>{s.active ? "可登入" : "已停用，不能登入"}</span>
                 </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="events-head" style={{ marginTop: 28 }}>
+        <div>
+          <h2 className="events-title">LINE 通知綁定</h2>
+          <p className="events-sub">
+            有新選手加入、新報名時，會用 LINE 通知已綁定的管理員，以及被選到的攝影師（新選手加入則通知所有在職攝影師）。
+            請本人在官方帳號的聊天室傳「綁定 綁定碼」（例如：綁定 AB12CD34）。
+          </p>
+        </div>
+      </div>
+      {recipients && !recipients.fieldsReady && (
+        <div className="error-hint">Ragic 的「後台網站管理員清單」與「攝影師名單」還沒有「LINE User ID」欄位，需先新增並設定欄位 ID 才能綁定。</div>
+      )}
+      <div className="table-wrap">
+        <table className="data-table" style={{ minWidth: 0 }}>
+          <thead>
+            <tr>
+              <th>名稱</th>
+              <th>身分</th>
+              <th>綁定狀態</th>
+              <th>綁定碼</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recipients?.items.map((r) => (
+              <tr key={`${r.kind}-${r.id}`}>
+                <td className="cell-title" data-label="名稱">{r.name}</td>
+                <td data-label="身分">{r.kind === "admin" ? "管理員" : "攝影師／小編"}</td>
+                <td data-label="綁定狀態">
+                  <span className={`pill ${r.bound ? "pill-registered" : "pill-closed"}`}>{r.bound ? "已綁定" : "未綁定"}</span>
+                </td>
+                <td data-label="綁定碼">{r.bound ? "—" : `綁定 ${r.code}`}</td>
               </tr>
             ))}
           </tbody>

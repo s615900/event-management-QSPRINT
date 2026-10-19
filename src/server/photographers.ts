@@ -32,6 +32,7 @@ export interface Photographer {
   adminAccess: boolean; // 可以登入後台（只能看儀表板和自己的拍攝行程）
   albumAccess: boolean; // 可以在後台管理自己被選到的賽事相簿（需同時有後台權限）
   schoolAccess: boolean; // 可以在後台管理學校名單（需同時有後台權限）
+  lineUserId: string; // 已綁定的 LINE userId（新單、報名通知用），未綁定為空字串
   active: boolean;
 }
 
@@ -65,9 +66,21 @@ function toPhotographer(rec: RagicRecord, id: string): Photographer {
     adminAccess: normalize(rec["後台權限"]) === "Yes",
     albumAccess: normalize(rec["相簿權限"]) === "Yes",
     schoolAccess: normalize(rec["學校名單權限"]) === "Yes",
+    lineUserId: normalize(rec["LINE User ID"]),
     // 「在職」空白（例如直接在 Ragic 新增時沒選）也當作在職
     active: normalize(rec["在職"]) !== STATUS_INACTIVE,
   };
+}
+
+// LINE 通知用：整份人員名單（含離職，由呼叫端自己篩選）
+export async function listRoster(): Promise<Photographer[]> {
+  return loadRoster();
+}
+
+export async function setStaffLineUserId(id: number, lineUserId: string): Promise<void> {
+  if (!PHOTOGRAPHER_FIELD.lineUserId) throw new StaffError("Ragic「攝影師名單」還沒有「LINE User ID」欄位", 400);
+  await ragicPost(`${SHEET.PHOTOGRAPHER}/${id}`, { [PHOTOGRAPHER_FIELD.lineUserId]: lineUserId }, { strict: true });
+  clearRosterCache();
 }
 
 // 攝影師帳號每次操作都要確認權限，名單短時間快取，避免每個請求都打 Ragic；寫入時清掉
@@ -244,6 +257,7 @@ export async function createStaff(input: StaffInput): Promise<Photographer> {
     adminAccess: Boolean(input.adminAccess),
     albumAccess: Boolean(input.albumAccess),
     schoolAccess: Boolean(input.schoolAccess),
+    lineUserId: "",
     active: true,
   };
   checkRole(p.role);

@@ -9,6 +9,7 @@ export interface AdminAccount {
   name: string;
   email: string;
   active: boolean;
+  lineUserId: string; // 已綁定的 LINE userId，未綁定為空字串
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,7 +26,13 @@ export async function listAdmins(): Promise<AdminAccount[]> {
     name: normalize(rec["姓名"]),
     email: normalize(rec["Email"]).toLowerCase(),
     active: normalize(rec["狀態"]) === ADMIN_STATUS_ACTIVE,
+    lineUserId: normalize(rec["LINE User ID"]),
   }));
+}
+
+export async function setAdminLineUserId(id: string, lineUserId: string): Promise<void> {
+  if (!ADMIN_FIELD.lineUserId) throw new AdminListError("Ragic「後台網站管理員清單」還沒有「LINE User ID」欄位", 400);
+  await ragicPost(`${SHEET.ADMIN_LIST}/${id}`, { [ADMIN_FIELD.lineUserId]: lineUserId }, { strict: true });
 }
 
 export async function addAdmin(input: { name?: string; email?: string }): Promise<AdminAccount> {
@@ -40,7 +47,7 @@ export async function addAdmin(input: { name?: string; email?: string }): Promis
     { [ADMIN_FIELD.name]: name, [ADMIN_FIELD.email]: email, [ADMIN_FIELD.status]: ADMIN_STATUS_ACTIVE },
     { strict: true },
   );
-  return { id: String(result.ragicId ?? ""), name, email, active: true };
+  return { id: String(result.ragicId ?? ""), name, email, active: true, lineUserId: "" };
 }
 
 // 修改姓名／Email／啟用狀態。不能停用或改掉「自己」的帳號，也不能讓清單裡沒有任何啟用中的管理員。

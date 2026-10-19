@@ -10,6 +10,7 @@ import {
 import { ragicPost, REGISTRATION_FIELD, SHEET } from "@/server/ragic";
 import { parseEventDateRange } from "@/server/dates";
 import { findPickable, listPickablePhotographers } from "@/server/photographers";
+import { notifyStaffAndAdmins } from "@/server/notify";
 import { readBody, serverError } from "@/server/http";
 
 // 送出賽事報名（寫入用數字欄位代碼）；lineUserId 一律採用 LIFF 驗證出的真實身分
@@ -98,6 +99,19 @@ export async function POST(req: Request) {
         playerName, eventName, itemCategory, eventItem, date, time, bibNumber,
         photographer: photographer?.name ?? "",
       }),
+    );
+    after(() =>
+      notifyStaffAndAdmins(
+        [
+          "📝 新報名",
+          `選手：${playerName || "—"}（${bibNumber || "—"}）`,
+          `賽事：${eventName || "—"}`,
+          `項目：${`${itemCategory || ""} ${eventItem || ""}`.trim() || "—"}`,
+          `日期：${`${date || ""} ${time || ""}`.trim() || "—"}`,
+          `攝影師：${photographer?.name || "未指定"}`,
+        ].join("\n"),
+        photographer?.name ?? null,
+      ),
     );
 
     return Response.json({ success: true, result });
