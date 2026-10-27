@@ -19,6 +19,21 @@ export function ragicUrl(path: string, extra = ""): string {
 
 export type RagicRecord = Record<string, string>;
 
+// 計時 log：在 Vercel Logs 搜尋 [ragic] 可看到每次 Ragic 請求花的毫秒數（不含金鑰）
+async function timedFetch(method: string, path: string, url: string, init: RequestInit = {}): Promise<string> {
+  const t0 = Date.now();
+  let status: number | string = "ERR";
+  let text = "";
+  try {
+    const res = await fetch(url, { ...init, method });
+    status = res.status;
+    text = await res.text();
+    return text;
+  } finally {
+    console.log(`[ragic] ${method} ${path} ${status} ${Date.now() - t0}ms ${(text.length / 1024).toFixed(0)}KB`);
+  }
+}
+
 function parseJson(text: string, label = "Ragic 回傳格式錯誤"): Record<string, unknown> {
   try {
     return JSON.parse(text) as Record<string, unknown>;
@@ -29,8 +44,7 @@ function parseJson(text: string, label = "Ragic 回傳格式錯誤"): Record<str
 
 export async function ragicGet(path: string, extra = ""): Promise<Record<string, unknown>> {
   if (isFakeRagic()) return fakeGet(path); // 本機測試：沒填金鑰時用假資料
-  const res = await fetch(ragicUrl(path, extra), { cache: "no-store" });
-  const json = parseJson(await res.text());
+  const json = parseJson(await timedFetch("GET", path, ragicUrl(path, extra), { cache: "no-store" }));
   if (json.status === "ERROR") {
     throw new Error(`Ragic 讀取失敗：${String(json.msg ?? "")}`);
   }
@@ -67,13 +81,13 @@ export async function ragicPost(
   { strict = false }: { strict?: boolean } = {},
 ): Promise<Record<string, unknown>> {
   if (isFakeRagic()) return fakePost(path, body);
-  const res = await fetch(ragicUrl(path), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
-  const result = parseJson(await res.text());
+  const result = parseJson(
+    await timedFetch("POST", path, ragicUrl(path), {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    }),
+  );
   assertWriteOk(result, "Ragic 寫入失敗");
   if (strict) {
     const errors = Array.isArray(result.errors) ? result.errors : [];
@@ -93,15 +107,16 @@ export async function ragicPost(
 
 export async function ragicPostForm(path: string, form: FormData): Promise<void> {
   if (isFakeRagic()) return; // 假資料不存圖片
-  const res = await fetch(ragicUrl(path), { method: "POST", body: form, cache: "no-store" });
-  const result = parseJson(await res.text(), "Ragic 圖片上傳回傳格式錯誤");
+  const result = parseJson(
+    await timedFetch("POST", `${path} (圖片)`, ragicUrl(path), { body: form, cache: "no-store" }),
+    "Ragic 圖片上傳回傳格式錯誤",
+  );
   assertWriteOk(result, "Ragic 圖片上傳失敗");
 }
 
 export async function ragicDelete(path: string): Promise<void> {
   if (isFakeRagic()) return fakeDelete(path);
-  const res = await fetch(ragicUrl(path), { method: "DELETE", cache: "no-store" });
-  const result = parseJson(await res.text());
+  const result = parseJson(await timedFetch("DELETE", path, ragicUrl(path), { cache: "no-store" }));
   if (result.status === "ERROR") {
     throw new Error(`Ragic 刪除失敗：${String(result.msg ?? "")}`);
   }
