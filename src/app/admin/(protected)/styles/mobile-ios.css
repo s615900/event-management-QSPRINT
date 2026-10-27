@@ -5,19 +5,6 @@ html { -webkit-text-size-adjust: 100%; }
 body { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 900px) {
-  /* 狀態列下方的全寬深色頂列：iOS／iPad 主畫面 App 會在狀態列疊一層系統半透明漸層，網頁控制不了，
-     只能用比它高的深色頂列蓋住（選單按鈕與內容都從頂列下方開始） */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: calc(env(safe-area-inset-top) + 56px);
-    background: var(--color-sidebar-bg);
-    z-index: 40;
-  }
-
   /* 加入主畫面後，狀態列為透明（black-translucent），選單按鈕與內容要避開瀏海 */
   .sidebar-toggle {
     top: calc(env(safe-area-inset-top) + 10px);
@@ -26,7 +13,7 @@ body { -webkit-tap-highlight-color: transparent; }
     height: 44px;
   }
   .main {
-    padding-top: calc(env(safe-area-inset-top) + 66px);
+    padding-top: 16px;
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: calc(env(safe-area-inset-bottom) + 24px);

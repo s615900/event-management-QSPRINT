@@ -1,0 +1,40 @@
+/* 後台頂列：橫跨全寬的深色頂列，含 iOS 狀態列後方的安全區（做法同 WD 工作台／接案系統）。
+   iPad／iPhone 主畫面 App 會在狀態列疊一層系統半透明漸層，網頁控制不了，
+   所以讓深色一路延伸到狀態列後面，漸層才不會落在淺色頁面上。側欄從頂列下方開始。 */
+:root { --topbar-h: calc(3.5rem + env(safe-area-inset-top)); }
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-sidebar-bg);
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.admin-topbar-inner {
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+}
+.admin-topbar-inner span { font-weight: 400; opacity: 0.75; margin-left: 6px; }
+
+/* 電腦版／平板橫放：側欄貼在頂列下方；頂列已有品牌名稱，側欄內的就不重複顯示 */
+@media (min-width: 901px) {
+  .sidebar {
+    position: sticky;
+    top: var(--topbar-h);
+    height: calc(100dvh - var(--topbar-h));
+    align-self: flex-start;
+    overflow-y: auto;
+  }
+  .sidebar .brand { display: none; }
+}
+
+/* 手機：左邊留位置給漢堡按鈕（固定在頂列內） */
+@media (max-width: 900px) {
+  .admin-topbar-inner { padding-left: calc(max(12px, env(safe-area-inset-left)) + 56px); }
+}

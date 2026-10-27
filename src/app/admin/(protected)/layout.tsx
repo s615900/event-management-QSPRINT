@@ -3,6 +3,7 @@ import { getAdminSession } from "@/server/admin/session";
 import { Sidebar } from "./_lib/Sidebar";
 // 沿用原 admin-web 的樣式檔（順序同原本的匯入順序）
 import "./styles/Sidebar.css";
+import "./styles/Topbar.css";
 import "./styles/DashboardPage.css";
 import "./styles/WeeklyEventsPage.css";
 import "./styles/MembersPage.css";
@@ -18,9 +19,17 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-main)" }}>
-      <Sidebar role={session.role} name={session.name} albumAccess={!!session.albumAccess} schoolAccess={!!session.schoolAccess} />
-      {children}
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh", background: "var(--color-bg-main)" }}>
+      <header className="admin-topbar">
+        <div className="admin-topbar-inner">
+          QSPRINT<span>影像報名</span>
+        </div>
+      </header>
+      <div style={{ display: "flex", flex: 1 }}>
+        <Sidebar role={session.role} name={session.name} albumAccess={!!session.albumAccess} schoolAccess={!!session.schoolAccess} />
+        {children}
+      </div>
     </div>
   );
+
 }

@@ -67,19 +67,3 @@ html, body { margin: 0; padding: 0; }
 @media (max-width: 768px) {
   .auth-page input, .auth-page select { font-size: 16px; }
 }
-
-/* 登入／無權限頁也要有狀態列下方的深色頂列（同 (protected)/styles/mobile-ios.css），
-   否則加入主畫面後第一個看到的登入頁仍會被 iOS 系統疊上半透明漸層 */
-@media (max-width: 900px) {
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: calc(env(safe-area-inset-top) + 56px);
-    background: #0e3a5c;
-    z-index: 40;
-  }
-  .auth-page { padding-top: calc(env(safe-area-inset-top) + 56px + 24px); }
-}
