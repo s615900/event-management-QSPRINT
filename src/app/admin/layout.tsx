@@ -4,11 +4,11 @@ export const metadata: Metadata = {
   title: "青春止秒 後台管理系統",
   manifest: "/admin/manifest.json",
   icons: { icon: "/admin/icons/icon-192.png", apple: "/admin/icons/icon-192.png" },
-  appleWebApp: { capable: true, title: "賽事後台", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "賽事後台", statusBarStyle: "black" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F5F8FA",
+  themeColor: "#0E3A5C",
   viewportFit: "cover",
 };
 
