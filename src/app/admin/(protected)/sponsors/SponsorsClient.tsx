@@ -24,12 +24,15 @@ export default function SponsorsClient() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "pending" | "replied">("all");
 
-  useEffect(() => {
+  const load = () =>
     api
       .get<{ items: Sponsor[] }>("/sponsors")
       .then((res) => setItems(res.items))
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
+
+  useEffect(() => {
+    load();
   }, []);
 
   const shown = useMemo(() => {
@@ -43,14 +46,13 @@ export default function SponsorsClient() {
 
   const pendingCount = useMemo(() => items.filter((s) => !s.replied).length, [items]);
 
-  // 勾選「已回覆」：先更新畫面，存檔失敗再還原
+  // 勾選「已回覆」：先更新畫面；存檔失敗（例如這筆已被刪除、畫面是舊的）就顯示原因並重新載入清單
   const toggleReplied = (s: Sponsor) => {
     const next = !s.replied;
     setError(null);
     setItems((list) => list.map((x) => (x.id === s.id ? { ...x, replied: next } : x)));
     api.patch(`/sponsors/${s.id}`, { replied: next }).catch((err: Error) => {
-      setItems((list) => list.map((x) => (x.id === s.id ? { ...x, replied: s.replied } : x)));
-      setError(err.message);
+      load().then(() => setError(`${err.message}，已重新載入最新清單`));
     });
   };
 
