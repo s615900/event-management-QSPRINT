@@ -161,7 +161,21 @@ export const SHEET = {
   AUDIT_LOG: "new-test-parameters/5", // 操作紀錄表
   PHOTOGRAPHER: "new-test-parameters/7", // 攝影師名單
   EVENT_ITEMS: "new-test-parameters/1", // 比賽項目表：報名頁「項目分類／比賽項目」選單來源
+  SPONSOR: `new-test-parameters/${process.env.RAGIC_SPONSOR_SHEET ?? "8"}`, // 贊助回報（待在 Ragic 建表後確認編號）
 } as const;
+
+// 贊助回報表（new-test-parameters/8，已與使用者確認欄位編號）；金額是「貨幣」型態，其餘為文字，轉帳日期格式 yyyy/MM/dd
+export const SPONSOR_FIELD = {
+  name: "1001644",
+  amount: "1001647",
+  last5: "1001648",
+  transferDate: "1001649",
+  contact: "1001645",
+  note: "1001646",
+  lineUserId: "1001650",
+  replied: "1001652", // 勾選，值 "Yes"/"No"
+} as const;
+export const SPONSOR_FIELD_READY = !Object.values(SPONSOR_FIELD).some((v) => v.startsWith("TODO"));
 
 // 選手資料表（new-beta/2）
 export const MEMBER_FIELD = {

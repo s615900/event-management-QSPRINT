@@ -1,0 +1,25 @@
+/* 贊助清單：搜尋＋狀態分頁籤＋統計 */
+.sp-toolbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+
+.sp-search { position: relative; }
+.sp-search input {
+  width: 100%; box-sizing: border-box; height: 42px; padding: 0 14px 0 40px; font-size: 15px;
+  color: var(--color-text-primary); background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border); border-radius: 12px; outline: none;
+}
+.sp-search input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(79, 168, 222, 0.2); }
+.sp-search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--color-text-secondary); pointer-events: none; }
+
+.sp-tabs { display: inline-flex; align-self: flex-start; gap: 4px; padding: 4px; background: var(--color-neutral-bg); border-radius: 12px; }
+.sp-tab {
+  border: 0; background: transparent; padding: 7px 16px; border-radius: 9px; font: inherit; font-size: 14px;
+  color: var(--color-text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.sp-tab.active { background: var(--color-card-bg); color: var(--color-primary-btn); font-weight: 700; box-shadow: 0 1px 3px rgba(14, 58, 92, 0.12); }
+.sp-tab-count { font-size: 12px; padding: 1px 7px; border-radius: 999px; background: var(--color-info-bg); color: var(--color-info-text); }
+.sp-tab.active .sp-tab-count { background: var(--color-accent); color: #fff; }
+
+.sp-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.sp-stat { background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: 12px; padding: 10px 16px; min-width: 120px; }
+.sp-stat-label { font-size: 12px; color: var(--color-text-secondary); }
+.sp-stat-value { font-size: 20px; font-weight: 700; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }

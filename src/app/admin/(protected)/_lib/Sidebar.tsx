@@ -11,6 +11,7 @@ const eventNavItems: Array<{ key: ViewKey; label: string }> = [
   { key: "event-master", label: "賽事資訊總表" },
   { key: "albums", label: "相簿管理" },
   { key: "schools", label: "學校名單管理" },
+  { key: "sponsors", label: "贊助清單" },
 ];
 
 const permissionNavItems: Array<{ key: ViewKey; label: string }> = [

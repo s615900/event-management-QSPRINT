@@ -31,6 +31,10 @@ const FIELD_LABELS: Record<string, Record<string, string>> = {
   "new-test-parameters/3": {
     "1001201": "賽事名稱", "1001202": "開始日期", "1001203": "結束日期", "1001204": "是否開放報名", "1001205": "建立日期",
   },
+  "new-test-parameters/8": {
+    "1001644": "選手名稱", "1001647": "金額", "1001648": "帳號末五碼", "1001649": "轉帳日期",
+    "1001645": "聯絡方式", "1001646": "想說的話", "1001650": "LINE userId", "1001652": "已回覆",
+  },
   "new-test-parameters/6": { "1001229": "姓名", "1001230": "Email", "1001231": "狀態" },
   "new-test-parameters/5": {
     "1001233": "時間戳記", "1001234": "操作者", "1001235": "Email", "1001236": "動作類型", "1001237": "目標資料描述", "1001238": "變更摘要",
@@ -65,6 +69,7 @@ function seed(): Store {
     "new-beta/3": {},
     "new-beta/7": {},
     "new-test-parameters/5": {},
+    "new-test-parameters/8": {},
     "new-test-parameters/6": { "1": { 姓名: "本機測試", Email: "local-test@example.com", 狀態: "啟用" } },
     "new-test-parameters/1": {
       "1": { 項目分類: "徑賽", 項目名稱: "100公尺", 是否啟用: "✔" },
