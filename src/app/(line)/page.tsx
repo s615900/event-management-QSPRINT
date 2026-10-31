@@ -12,7 +12,8 @@ import { cache, saveMember } from "@/lib/member-cache";
 const MEMBER_ENTRIES = [
   { href: "/form", icon: "🏅", title: "賽事拍攝登記", desc: "選擇賽事與項目，線上完成報名" },
   { href: "/history", icon: "📋", title: "賽事拍攝紀錄", desc: "查看已報名的賽事與號碼" },
-  { href: "/album", icon: "📂", title: "賽事相簿", desc: "查看您參加的賽事相簿資料夾" },
+  // 賽事相簿暫時不使用（頁面與 API 保留，要重開時把這行取消註解）
+  // { href: "/album", icon: "📂", title: "賽事相簿", desc: "查看您參加的賽事相簿資料夾" },
   { href: "/support", icon: "☕", title: "支持 QSPRINT", desc: "請我們喝杯咖啡，轉帳後可線上回報" },
 ];
 const REGISTER_ENTRY = { href: "/register", icon: "📝", title: "選手資料登錄", desc: "第一次使用請先登錄基本資料（僅需一次）" };
