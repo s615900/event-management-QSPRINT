@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { V1Container, V1Header } from "@/components/v1-ui";
-import { readCachedMember } from "@/lib/member-cache";
 
 // 贊助頁（獨立頁面，不需要 LINE 登入／綁定）：銀行轉帳資訊＋轉帳回報表單（回報資料送到 /api/sponsor，存進 Ragic，後台「贊助清單」可看）
 const BANK = {
@@ -17,11 +16,6 @@ const labelCls = "mb-1 block text-[13px] text-gray-500";
 const btnCls =
   "w-full rounded-[10px] bg-brand py-3 text-[15px] font-bold text-white active:scale-[0.98] disabled:opacity-60";
 
-// 聯絡方式：IG 優先，其次手機、Email
-function pickContact(m: { ig?: string; phone?: string; email?: string }) {
-  return m.ig || m.phone || m.email || "";
-}
-
 export default function SupportPage() {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
@@ -33,13 +27,6 @@ export default function SupportPage() {
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-
-  // 若這支手機以前登錄過選手資料，從本機快取帶入（純本機、不呼叫 LINE；沒有就手動填）
-  useEffect(() => {
-    const cached = readCachedMember();
-    setName((v) => v || cached.playerName || "");
-    setContact((v) => v || pickContact(cached));
-  }, []);
 
   async function copyAccount() {
     const text = BANK.account.replace(/[^0-9]/g, "");
