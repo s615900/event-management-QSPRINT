@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { V1Container, V1Header } from "@/components/v1-ui";
-import { authHeaders, fetchMember, getLineIdToken } from "@/lib/liff";
-import { cache, readCachedMember, saveMember } from "@/lib/member-cache";
+import { readCachedMember } from "@/lib/member-cache";
 
-// 贊助頁：銀行轉帳資訊＋轉帳回報表單（回報資料送到 /api/sponsor，存進 Ragic，後台「贊助清單」可看）
+// 贊助頁（獨立頁面，不需要 LINE 登入／綁定）：銀行轉帳資訊＋轉帳回報表單（回報資料送到 /api/sponsor，存進 Ragic，後台「贊助清單」可看）
 const BANK = {
   name: "012 台北富邦銀行",
   holder: "吳偉德",
@@ -30,31 +29,16 @@ export default function SupportPage() {
   const [last5, setLast5] = useState("");
   const [date, setDate] = useState("");
   const [note, setNote] = useState("");
+  const [website, setWebsite] = useState(""); // 防機器人的隱藏欄位，真人不會填
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
-  // 帶入選手資料：先用手機快取，再向後端取最新（只在欄位還沒被使用者改過時覆蓋）
+  // 若這支手機以前登錄過選手資料，從本機快取帶入（純本機、不呼叫 LINE；沒有就手動填）
   useEffect(() => {
     const cached = readCachedMember();
     setName((v) => v || cached.playerName || "");
     setContact((v) => v || pickContact(cached));
-
-    (async () => {
-      const lineUserId = cache.get("lineUserId");
-      if (!lineUserId) return;
-      try {
-        const token = await getLineIdToken();
-        const data = await fetchMember(lineUserId, token);
-        if (data.found && data.member) {
-          saveMember(data.member);
-          setName((v) => v || data.member?.playerName || "");
-          setContact((v) => v || pickContact(data.member ?? {}));
-        }
-      } catch {
-        // 取不到就維持手動填寫
-      }
-    })();
   }, []);
 
   async function copyAccount() {
@@ -81,11 +65,10 @@ export default function SupportPage() {
 
     setSending(true);
     try {
-      const token = await getLineIdToken();
       const res = await fetch("/api/sponsor", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders(token) },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, website }),
       });
       if (!res.ok) throw new Error(((await res.json().catch(() => ({}))) as { error?: string }).error || "送出失敗");
       setAmount("");
@@ -102,7 +85,7 @@ export default function SupportPage() {
 
   return (
     <>
-      <V1Header title="☕ 支持 QSPRINT" subtitle="支持我們持續記錄賽場" back />
+      <V1Header title="☕ 支持 QSPRINT" subtitle="支持我們持續記錄賽場" standalone />
       <V1Container>
         <p className="mb-5 text-center text-sm leading-7 text-gray-500">
           QSPRINT 的賽事攝影與紀錄都是自費完成的。
@@ -132,6 +115,7 @@ export default function SupportPage() {
           <p className="text-[17px] font-bold text-gray-900">轉帳回報</p>
           <p className="mb-4 text-[13px] leading-6 text-gray-500">轉帳完成後填一下，我們才知道是你，才能好好謝謝你 🙏</p>
           <form onSubmit={onSubmit} noValidate>
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={website} onChange={(e) => setWebsite(e.target.value)} className="absolute -left-[9999px] h-0 w-0 opacity-0" />
             <label htmlFor="s-name" className={labelCls}>
               選手名稱／暱稱 <span className="text-brand">*</span>
             </label>

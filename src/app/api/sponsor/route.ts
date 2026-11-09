@@ -1,19 +1,30 @@
 import { after } from "next/server";
 import { notifyStaffAndAdmins } from "@/server/notify";
-import { requireLineIdentity } from "@/server/line";
 import { isFakeRagic } from "@/server/test-mode";
 import { normalize, ragicPost, SHEET, SPONSOR_FIELD, SPONSOR_FIELD_READY } from "@/server/ragic";
 import { jsonError, readBody, serverError } from "@/server/http";
 
 // 贊助頁的「轉帳回報」：寫入 Ragic 贊助回報表，後台「贊助清單」讀這張表
+// 不需 LINE 登入（公開頁面）：用隱藏欄位＋同一 IP 每分鐘次數限制擋機器人
+const hits = new Map<string, number[]>();
+function tooMany(ip: string) {
+  const now = Date.now();
+  const list = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
+  list.push(now);
+  hits.set(ip, list);
+  if (hits.size > 500) for (const [k, v] of hits) if (v.every((t) => now - t >= 60_000)) hits.delete(k);
+  return list.length > 5;
+}
+
 export async function POST(req: Request) {
-  const auth = await requireLineIdentity(req);
-  if ("response" in auth) return auth.response;
   try {
+    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+    if (tooMany(ip)) return jsonError("送出太頻繁，請稍後再試", 429);
     // Ragic 欄位 ID 還沒確認前，正式環境不寫入，避免資料寫到錯的欄位
     if (!SPONSOR_FIELD_READY && !isFakeRagic()) return jsonError("贊助回報尚未開通", 503);
 
     const body = await readBody(req);
+    if (normalize(body.website)) return Response.json({ success: true }); // 機器人填了隱藏欄位：假裝成功、不寫入
     const name = normalize(body.name);
     const contact = normalize(body.contact);
     const amount = normalize(body.amount).replace(/[^0-9]/g, "");
@@ -30,8 +41,7 @@ export async function POST(req: Request) {
         [SPONSOR_FIELD.transferDate]: normalize(body.date).replace(/-/g, "/"),
         [SPONSOR_FIELD.contact]: contact,
         [SPONSOR_FIELD.note]: normalize(body.note),
-        [SPONSOR_FIELD.lineUserId]: auth.lineUserId,
-      },
+              },
       { strict: true },
     );
 
